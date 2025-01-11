@@ -195,6 +195,7 @@ void updateWorld(Plague &p)
 							tmpWorld[i][j] =
 								INFECTED;
 						}
+						break;
 					}
 				}
 				break;
@@ -220,6 +221,7 @@ void updateWorld(Plague &p)
 							tmpWorld[i][j] =
 								INFECTED;
 						}
+						break;
 					}
 				}
 				break;
