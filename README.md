@@ -8,7 +8,6 @@
 
 ## Features
 
-- Simulates the spread of a plague within a 2D grid.
 - Allows customization of parameters like population size, initial immunity, infection duration, and more.
 - Provides detailed statistics on the progression of the plague.
 - Optionally generates a video visualizing the outbreak's spread.
@@ -17,9 +16,9 @@
 
 ## Requirements
 
-- **C++ Compiler** (compatible with C++11 or later).
+- **C++ Compiler** (compatible with C++17 or later).
 - **Dependencies**:
-  - `plague.h` and `video_utils.h` (header files).
+  - `plague.h` and `video_utils.h`.
   - A library capable of generating video output (e.g., OpenCV if `createVideo` depends on it).
 
 
@@ -141,15 +140,5 @@ Creating video
 Creating...
 Video created
 ```
-here is the video generated:
-![gif](./docs/assets/img/plague.gif)]
+![gif](./docs/assets/img/plague.gif)
 
----
-
-## License
-
-This project is licensed under the MIT License. Feel free to use, modify, and distribute it as per the license terms.
-
---- 
-
-Feel free to reach out for any questions or contributions!
