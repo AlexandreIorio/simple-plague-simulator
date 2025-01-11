@@ -54,11 +54,13 @@ int main(int argc, char *argv[])
 	p.populationPercent = 50;
 	p.immunePercent = 0;
 	p.deathProbability = 10;
+	p.infectionDuration = 10;
 	p.healthyInfectionProbability = 10;
+	p.immuneInfectionProbability = 10;
 	p.initialInfected = 1;
 	p.proximity = 2;
 
-	const char *shortOptions = "p:e:d:y:h:w:r:i:m:v:n";
+	const char *shortOptions = "p:e:n:d:r:i:m:y:h:w:v:";
 	const struct option longOptions[] = {
 		{ "population", required_argument, nullptr, 'p' },
 		{ "healthy-infection-probability", required_argument, nullptr,
