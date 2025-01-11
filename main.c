@@ -188,8 +188,8 @@ int main(int argc, char *argv[])
 	vector<vector<vector<int> > > stepsToApocalypse;
 	int nb_turn = 0;
 
-	vector<vector<int> > stepToApocalypse;
-
+	vector<vector<int> > stepToApocalypse = p.world;
+	stepsToApocalypse.push_back(stepToApocalypse);
 	//init timer
 	while (getNbInfected(p) > 0) {
 		updateWorld(p);
