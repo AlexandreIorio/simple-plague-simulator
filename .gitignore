@@ -2,4 +2,5 @@
 .cache/clangd/index
 *.avi
 PlagueSimulator
-
+*.o
+compile_commands.json
