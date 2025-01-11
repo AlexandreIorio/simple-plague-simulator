@@ -19,7 +19,7 @@
 - **C++ Compiler** (compatible with C++17 or later).
 - **Dependencies**:
   - `plague.h` and `video_utils.h`.
-  - A library capable of generating video output (e.g., OpenCV if `createVideo` depends on it).
+  - OpenCV to create the video.
 
 
 ## Usage
