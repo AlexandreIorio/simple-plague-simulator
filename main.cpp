@@ -384,7 +384,6 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	world_destroy(&world);
 	std::cout << "Simulation took           : " << total_elapsed << " s\n";
 	std::cout << "Number of turns           : " << rounds << '\n';
 	std::cout << "Number of healty people   : " << world_get_healthy(&world)
@@ -397,5 +396,6 @@ int main(int argc, char *argv[])
 	std::cout << "Number of dead people     : " << world_get_dead(&world)
 		  << '\n';
 	std::cout << "\n";
+	world_destroy(&world);
 	return 0;
 }
