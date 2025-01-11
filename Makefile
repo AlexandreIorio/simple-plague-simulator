@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -Wall -Wextra -std=c++17 `pkg-config --cflags opencv4`
 LDFLAGS = `pkg-config --libs opencv4`
-TARGET = PlagueSimulator
+TARGET = plague-simulator
 
 SRC_CPP = $(wildcard *.cpp)
 SRC_C = $(wildcard *.c)
