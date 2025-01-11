@@ -89,25 +89,19 @@ int getNbDead(Plague p)
 	return nbDead;
 }
 
-///@brief Infects randomly a number of healty people
-
 void initializeInfection(Plague &p)
 {
-	// Récupérer toutes les cellules comme une liste plate
 	std::vector<std::pair<int, int> > cells;
 	for (int i = 0; i < p.worldHeight; ++i) {
 		for (int j = 0; j < p.worldWidth; ++j) {
-			cells.emplace_back(
-				i, j); // Ajouter chaque cellule à la liste
+			cells.emplace_back(i, j);
 		}
 	}
 
-	// Mélanger les cellules aléatoirement
 	std::random_device rd;
 	std::mt19937 g(rd());
 	std::shuffle(cells.begin(), cells.end(), g);
 
-	// Infecter le nombre souhaité de cellules
 	int infected = 0;
 	for (const auto &cell : cells) {
 		int i = cell.first;
@@ -118,7 +112,7 @@ void initializeInfection(Plague &p)
 			++infected;
 
 			if (infected >= p.initialInfected) {
-				break; // Arrêter lorsque le nombre requis est atteint
+				break;
 			}
 		}
 	}
