@@ -108,6 +108,42 @@ Number of immunized people: 278
 Number of survivor        : 246
 Number of dead people     : 42
 ```
+
+width video flag:
+```bash
+❯ ./PlagueSimulator -p 45 -m 10 -e 3 -d 8 -r 15 -i 5 -y 3 -h 128 -w 128 -v
+
+-----------------------------------
+         Plague Simulator
+-----------------------------------
+------------------------------------
+Parameters :
+------------------------------------
+Population           : 45%
+
+...
+...
+
+------------------------------------
+Simulation
+------------------------------------
+Simulation started
+Simulation took           : 12.1546 s
+Number of turns           : 109
+Number of healty people   : 0
+Number of immunized people: 6441
+Number of survivor        : 5704
+Number of dead people     : 931
+
+------------------------------------
+Creating video
+------------------------------------
+Creating...
+Video created
+```
+here is the video generated:
+![gif](./docs/assets/img/plague.gif)]
+
 ---
 
 ## License
