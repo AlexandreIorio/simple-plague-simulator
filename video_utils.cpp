@@ -48,7 +48,7 @@ int create_video(int **grids, size_t rounds, size_t w, size_t h,
 	cv::Size videoSize(w * cellSize, h * cellSize);
 
 	cv::VideoWriter writer(outputPath,
-			       cv::VideoWriter::fourcc('H', '2', '6', '4'), fps,
+			       cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), fps,
 			       videoSize);
 	if (!writer.isOpened()) {
 		return -1;
