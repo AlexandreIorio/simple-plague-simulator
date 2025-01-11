@@ -5,5 +5,5 @@ death_probability 10
 initial_infected 1
 initial_immune 0
 proximity 2
-world_height 10
-world_width 10
+world_height 256
+world_width 256
