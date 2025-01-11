@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
 	     << p.healthyInfectionProbability << " % \n"
 	     << "Immune infection probability: " << p.immuneInfectionProbability
 	     << " % \n"
-	     << "Death probability           : " << p.deathProbability << "%\n"
+	     << "Death probability           : " << p.deathProbability << " %\n"
 	     << "Initial infected            : " << p.initialInfected << "\n";
 
 	cout << "\n";

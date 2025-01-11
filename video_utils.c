@@ -54,7 +54,7 @@ void createVideo(const std::vector<std::vector<std::vector<int> > > &grid3D,
 
 	// Initialiser le writer vidéo
 	cv::VideoWriter writer(outputPath,
-			       cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), fps,
+			       cv::VideoWriter::fourcc('H', '2', '6', '4'), fps,
 			       videoSize);
 	if (!writer.isOpened()) {
 		throw std::runtime_error(

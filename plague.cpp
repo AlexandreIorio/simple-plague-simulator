@@ -185,7 +185,9 @@ void updateWorld(Plague &p)
 				for (auto &neighbour : neighbours) {
 					if (p.world[neighbour[0]]
 						   [neighbour[1]] == INFECTED) {
-						if (rand() % 100 <
+						if (static_cast<float>(rand() %
+								       100) /
+							    100 <
 						    p.healthyInfectionProbability) {
 							tmpWorld[i][j] =
 								INFECTED;
@@ -196,7 +198,9 @@ void updateWorld(Plague &p)
 				break;
 			case INFECTED:
 				if (p.infectionDurationMap[i][j] == 0) {
-					if (rand() % 100 < p.deathProbability) {
+					if (static_cast<float>(rand() % 100) /
+						    100 <
+					    p.deathProbability) {
 						tmpWorld[i][j] = DEAD;
 					} else {
 						tmpWorld[i][j] = IMMUNE;
@@ -213,7 +217,9 @@ void updateWorld(Plague &p)
 				for (auto &neighbour : neighbours) {
 					if (p.world[neighbour[0]]
 						   [neighbour[1]] == INFECTED) {
-						if (rand() % 100 <
+						if (static_cast<float>(rand() %
+								       100) /
+							    100 <
 						    p.immuneInfectionProbability) {
 							tmpWorld[i][j] =
 								INFECTED;

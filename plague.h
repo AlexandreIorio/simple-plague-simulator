@@ -9,14 +9,18 @@ class Plague {
     public:
 	int worldHeight;
 	int worldWidth;
+
 	int populationPercent;
 	int immunePercent;
-	int deathProbability;
 	int infectionDuration;
-	int healthyInfectionProbability;
-	int immuneInfectionProbability;
+
+	float deathProbability;
+	float healthyInfectionProbability;
+	float immuneInfectionProbability;
+
 	int initialInfected;
 	int proximity;
+
 	vector<vector<int> > world;
 	vector<vector<int> > exposureDurationMap;
 	vector<vector<int> > infectionDurationMap;
