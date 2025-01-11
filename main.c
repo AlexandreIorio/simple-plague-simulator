@@ -147,8 +147,8 @@ int main(int argc, char *argv[])
 	cout << "------------------------------------\n";
 	cout << "Parameters :\n";
 	cout << "------------------------------------\n";
-	cout << "Population           : " << p.populationPercent << "% : \n"
-	     << "Population immunized : " << p.immunePercent << "% : \n"
+	cout << "Population           : " << p.populationPercent << "%\n"
+	     << "Population immunized : " << p.immunePercent << "%\n"
 	     << "World height         : " << p.worldHeight << "\n"
 	     << "World Width          : " << p.worldWidth << "\n"
 	     << "World size           : " << p.worldHeight * p.worldWidth
@@ -193,10 +193,10 @@ int main(int argc, char *argv[])
 	clock_gettime(CLOCK_MONOTONIC, &finish);
 	elapsed = (finish.tv_sec - start.tv_sec);
 	elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
-	cout << "Simulation took           :" << elapsed << " s\n";
+	cout << "Simulation took           : " << elapsed << " s\n";
 	cout << "Number of turns           : " << nb_turn << endl;
 	cout << "Number of healty people   : " << getNbHealty(p) << endl;
-	cout << "Number of Immunized people: " << getNbImmune(p) << endl;
+	cout << "Number of immunized people: " << getNbImmune(p) << endl;
 	cout << "Number of survivor        : " << getNbImmune(p) - initialImmune
 	     << endl;
 	cout << "Number of dead people     : " << getNbDead(p) << endl;
