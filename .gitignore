@@ -1,6 +1,6 @@
 .idea
 .cache/clangd/index
 *.avi
-PlagueSimulator
+plague-simulator
 *.o
 compile_commands.json
