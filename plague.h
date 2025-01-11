@@ -11,9 +11,10 @@ class Plague {
 	int worldWidth;
 	int populationPercent;
 	int immunePercent;
-	int exposureDuration;
 	int deathProbability;
 	int infectionDuration;
+	int healthyInfectionProbability;
+	int immuneInfectionProbability;
 	int initialInfected;
 	int proximity;
 	vector<vector<int> > world;
@@ -26,10 +27,6 @@ enum State { EMPTY = 0, HEALTHY, INFECTED, DEAD, IMMUNE };
 
 ///@brief Initializes the grid with random values based on population percentage.
 void initializeGrid(Plague &p);
-
-///@brief Retrieves the indices of all healthy people in the grid.
-///@param healthyPeopleIndexes Vector to store the indices of healthy people.
-void getHealty(Plague p, vector<vector<int> > &healthyPeopleIndexes);
 
 ///@brief Retrieves the indices of all infected people in the grid.
 ///@param infectedPeopleIndexes Vector to store the indices of infected people.

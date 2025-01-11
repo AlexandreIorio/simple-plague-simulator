@@ -27,10 +27,10 @@ void printUsage(Plague p)
 	     << p.populationPercent << "%\n"
 	     << "  -m, --popilation-immune       Number of initial immune, default "
 	     << p.immunePercent << "%\n"
-	     << "  -e, --exposure       Duration of exposure before infection, default "
-	     << p.exposureDuration << "\n"
-	     << "  -d, --duration       Duration of infection before immune or death, default "
-	     << p.infectionDuration << "\n"
+	     << "  -e, --heathy-infection       Probability to infect a healthy person , default "
+	     << p.healthyInfectionProbability << "\n"
+	     << "  -n, --immune-infection       Probability to infect an immune person , default "
+	     << p.immuneInfectionProbability << "\n"
 	     << "  -r, --dead-probability       Probability of death, default "
 	     << p.deathProbability << "\n"
 	     << "  -i, --initial-infected       Number of initial infected, default "
@@ -53,17 +53,18 @@ int main(int argc, char *argv[])
 	p.worldWidth = 10;
 	p.populationPercent = 50;
 	p.immunePercent = 0;
-	p.exposureDuration = 5;
 	p.deathProbability = 10;
-	p.infectionDuration = 10;
+	p.healthyInfectionProbability = 10;
 	p.initialInfected = 1;
 	p.proximity = 2;
 
-	const char *shortOptions = "p:e:d:y:h:w:r:i:m:v";
+	const char *shortOptions = "p:e:d:y:h:w:r:i:m:v:n";
 	const struct option longOptions[] = {
 		{ "population", required_argument, nullptr, 'p' },
-		{ "exposure-duration", required_argument, nullptr, 'e' },
-		{ "infection-duration", required_argument, nullptr, 'd' },
+		{ "healthy-infection-probability", required_argument, nullptr,
+		  'e' },
+		{ "immune-infection-probability", required_argument, nullptr,
+		  'n' },
 		{ "dead-probability", required_argument, nullptr, 'r' },
 		{ "initial-infected", required_argument, nullptr, 'i' },
 		{ "initial-immune", required_argument, nullptr, 'm' },
@@ -90,11 +91,15 @@ int main(int argc, char *argv[])
 			break;
 
 		case 'e':
-			p.exposureDuration = atoi(optarg);
+			p.healthyInfectionProbability = atoi(optarg);
+			break;
+
+		case 'n':
+			p.immuneInfectionProbability = atoi(optarg);
 			break;
 
 		case 'd':
-			p.infectionDuration = atoi(optarg);
+			p.healthyInfectionProbability = atoi(optarg);
 			break;
 
 		case 'r':
@@ -132,8 +137,6 @@ int main(int argc, char *argv[])
 
 	p.world = std::vector<vector<int> >(p.worldHeight,
 					    vector<int>(p.worldWidth, EMPTY));
-	p.exposureDurationMap = std::vector<vector<int> >(
-		p.worldHeight, vector<int>(p.worldWidth, p.exposureDuration));
 	p.infectionDurationMap = std::vector<vector<int> >(
 		p.worldHeight, vector<int>(p.worldWidth, p.infectionDuration));
 
@@ -147,17 +150,21 @@ int main(int argc, char *argv[])
 	cout << "------------------------------------\n";
 	cout << "Parameters :\n";
 	cout << "------------------------------------\n";
-	cout << "Population           : " << p.populationPercent << "%\n"
-	     << "Population immunized : " << p.immunePercent << "%\n"
-	     << "World height         : " << p.worldHeight << "\n"
-	     << "World Width          : " << p.worldWidth << "\n"
-	     << "World size           : " << p.worldHeight * p.worldWidth
+	cout << "Population                  : " << p.populationPercent << "%\n"
+	     << "Population immunized        : " << p.immunePercent << "%\n"
+	     << "World height                : " << p.worldHeight << "\n"
+	     << "World Width                 : " << p.worldWidth << "\n"
+	     << "World size                  : " << p.worldHeight * p.worldWidth
 	     << "\n"
-	     << "Proximity            : " << p.proximity << "\n"
-	     << "Exposure duration    : " << p.exposureDuration << " turns\n"
-	     << "Infection duration   : " << p.infectionDuration << " turns\n"
-	     << "Death probability    : " << p.deathProbability << "%\n"
-	     << "Initial infected     : " << p.initialInfected << "\n";
+	     << "Proximity                   : " << p.proximity << "\n"
+	     << "Infection duration          : " << p.infectionDuration
+	     << " turns\n"
+	     << "Healty infection probability: "
+	     << p.healthyInfectionProbability << " % \n"
+	     << "Immune infection probability: " << p.immuneInfectionProbability
+	     << " % \n"
+	     << "Death probability           : " << p.deathProbability << "%\n"
+	     << "Initial infected            : " << p.initialInfected << "\n";
 
 	cout << "\n";
 	int initialImmune = getNbImmune(p);

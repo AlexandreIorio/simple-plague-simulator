@@ -180,9 +180,25 @@ void updateWorld(Plague &p)
 		}
 	}
 
+	vector<vector<int> > neighbours;
+
 	for (int i = 0; i < p.worldHeight; i++) {
 		for (int j = 0; j < p.worldWidth; j++) {
-			if (p.world[i][j] == INFECTED) {
+			switch (p.world[i][j]) {
+			case HEALTHY:
+				getNeighbours(p, i, j, neighbours);
+				for (auto &neighbour : neighbours) {
+					if (p.world[neighbour[0]]
+						   [neighbour[1]] == INFECTED) {
+						if (rand() % 100 <
+						    p.healthyInfectionProbability) {
+							tmpWorld[i][j] =
+								INFECTED;
+						}
+					}
+				}
+				break;
+			case INFECTED:
 				if (p.infectionDurationMap[i][j] == 0) {
 					if (rand() % 100 < p.deathProbability) {
 						tmpWorld[i][j] = DEAD;
@@ -192,23 +208,24 @@ void updateWorld(Plague &p)
 				} else {
 					p.infectionDurationMap[i][j]--;
 				}
-			} else if (p.world[i][j] == HEALTHY) {
-				vector<vector<int> > neighbours;
+
+				break;
+			case IMMUNE:
 				getNeighbours(p, i, j, neighbours);
 				for (auto &neighbour : neighbours) {
 					if (p.world[neighbour[0]]
 						   [neighbour[1]] == INFECTED) {
-						if (p.exposureDurationMap[i][j] >
-						    0) {
-							p.exposureDurationMap
-								[i][j]--;
-						} else {
+						if (rand() % 100 <
+						    p.immuneInfectionProbability) {
 							tmpWorld[i][j] =
 								INFECTED;
 						}
-						break;
 					}
 				}
+				break;
+			case EMPTY:
+			case DEAD:
+				break;
 			}
 		}
 	}
