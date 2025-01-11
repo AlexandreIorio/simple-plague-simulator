@@ -1,6 +1,8 @@
+CC = gcc
 CXX = g++
 CXXFLAGS = -Wall -Wextra -std=c++17 `pkg-config --cflags opencv4`
 LDFLAGS = `pkg-config --libs opencv4`
+CCFLAGS = -Wall -Wextra -O3
 TARGET = plague-simulator
 
 SRC_CPP = $(wildcard *.cpp)
@@ -18,7 +20,7 @@ $(TARGET): $(OBJ)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 %.o: %.c
-	$(CXX) $(CXXFLAGS) -c $< -o $@  # Utiliser g++ pour les fichiers C
+	$(CC) $(CCFLAGS) -c $< -o $@ 
 
 clean:
 	rm -f $(OBJ) $(TARGET)
