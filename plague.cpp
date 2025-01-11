@@ -128,25 +128,23 @@ void initializeImmune(Plague &p)
 {
 	srand(time(0));
 	int maxPeople = getNbHealty(p) * p.immunePercent / 100;
+	vector<pair<int, int> > healtyPeopleIndexes;
 
-	int people = 0;
-
-	while (people < maxPeople) {
-		for (int i = 0; i < p.worldHeight; i++) {
-			for (int j = 0; j < p.worldWidth; j++) {
-				if (p.world[i][j] != HEALTHY) {
-					continue;
-				};
-				if (people >= maxPeople) {
-					break;
-				}
-
-				if (rand() % 100 < p.populationPercent) {
-					p.world[i][j] = IMMUNE;
-					people++;
-				}
+	for (int i = 0; i < p.worldHeight; i++) {
+		for (int j = 0; j < p.worldWidth; j++) {
+			if (p.world[i][j] == HEALTHY) {
+				healtyPeopleIndexes.push_back({ i, j });
 			}
 		}
+	}
+
+	std::random_device rd;
+	std::mt19937 g(rd());
+	std::shuffle(healtyPeopleIndexes.begin(), healtyPeopleIndexes.end(), g);
+
+	for (int i = 0; i < maxPeople; i++) {
+		p.world[healtyPeopleIndexes[i].first]
+		       [healtyPeopleIndexes[i].second] = IMMUNE;
 	}
 }
 
