@@ -150,6 +150,7 @@ void initializeImmune(Plague &p)
 
 void getNeighbours(Plague p, int i, int j, vector<vector<int> > &neighbours)
 {
+	neighbours.clear();
 	for (int dx = -p.proximity; dx <= p.proximity; ++dx) {
 		for (int dy = -p.proximity; dy <= p.proximity; ++dy) {
 			if (dx == 0 && dy == 0) {
@@ -205,6 +206,8 @@ void updateWorld(Plague &p)
 						tmpWorld[i][j] = DEAD;
 					} else {
 						tmpWorld[i][j] = IMMUNE;
+						p.infectionDurationMap[i][j] =
+							p.infectionDuration;
 					}
 				} else {
 					p.infectionDurationMap[i][j]--;
