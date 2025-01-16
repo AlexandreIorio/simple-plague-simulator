@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
 		.proximity = 2,
 	};
 
-	const char *shortOptions = "p:e:n:d:r:i:m:y:h:w:vf:g";
+	const char *shortOptions = "p:e:n:d:r:i:m:y:h:w:f:g";
 	const struct option longOptions[] = {
 		{ "population", required_argument, nullptr, 'p' },
 		{ "healthy-infection-probability", required_argument, nullptr,
@@ -150,7 +150,6 @@ int main(int argc, char *argv[])
 		{ "proximity", required_argument, nullptr, 'y' },
 		{ "world-height", required_argument, nullptr, 'h' },
 		{ "world-width", required_argument, nullptr, 'w' },
-		{ "video", no_argument, nullptr, 'v' },
 		{ "file", required_argument, nullptr, 'f' },
 		{ "generate-file", no_argument, nullptr,
 		  'g' }, // Nouvelle option
