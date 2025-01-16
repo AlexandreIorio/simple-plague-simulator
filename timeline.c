@@ -61,9 +61,6 @@ int timeline_save(timeline_t *tl, const char *path)
 	fwrite(&tl->params, sizeof(tl->params), 1, f);
 
 	for (size_t i = 0; i < tl->nb_rounds; ++i) {
-		printf("Saving round %zu/%zu, size (%zu) * (%zu)\n", i,
-		       tl->nb_rounds, sizeof(**tl->grids),
-		       tl->params.worldWidth * tl->params.worldHeight);
 		fwrite(tl->grids[i], sizeof(**tl->grids),
 		       tl->params.worldWidth * tl->params.worldHeight, f);
 	}
