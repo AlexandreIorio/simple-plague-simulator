@@ -1,12 +1,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include "timeline.h"
 #include <getopt.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include "world.h"
-#include "video_utils.h"
 
 static const char *parameterNames[] = {
 	"population",
@@ -122,7 +122,6 @@ void printUsage(const world_parameters_t *w)
 
 int main(int argc, char *argv[])
 {
-	bool doVideo = false;
 	size_t total_rounds = 0;
 	world_parameters_t params = {
 		.worldHeight = 10,
@@ -220,10 +219,6 @@ int main(int argc, char *argv[])
 			}
 			exit(0);
 		}
-		case 'v':
-			doVideo = true;
-			break;
-
 		case '?':
 		case ':':
 		default:
@@ -283,109 +278,56 @@ int main(int argc, char *argv[])
 	std::cout << "Simulation\n";
 	std::cout << "------------------------------------\n";
 	std::cout << "Simulation started\n";
+
 	struct timespec start, finish;
 
+	int err;
 	double total_elapsed = 0;
-	size_t rounds = 0;
-	if (doVideo) {
-		int **grids = NULL;
-		size_t grids_size = 0;
-		if (total_rounds > 0) {
-			grids_size = total_rounds;
-		} else {
-			grids_size = 128;
+	timeline_t tl;
+
+	ret = timeline_init(&tl, &world.params);
+	if (ret < 0) {
+		std::cerr << "Failed to allocate memory to store world state"
+			  << '\n';
+		return 1;
+	}
+
+	while (world_get_infected(&world) > 0) {
+		if (total_rounds > 0 && tl.nb_rounds >= total_rounds) {
+			break;
+		}
+		void *ret = world_prepare_update(&world);
+		if (!ret) {
+			std::cerr << "Failed to Update World" << '\n';
+			break;
 		}
 
-		grids = (int **)calloc(grids_size, sizeof(*grids));
+		clock_gettime(CLOCK_MONOTONIC, &start);
+		world_update(&world, ret);
+		clock_gettime(CLOCK_MONOTONIC, &finish);
 
-		if (!grids) {
-			std::cerr
-				<< "Failed to allocate memory to store world state"
-				<< '\n';
-			return 1;
+		err = timeline_push_round(&tl, (int *)world.grid);
+		if (err < 0) {
+			std::cerr << "Failed to save last round\n";
+			break;
 		}
+		double round_elapsed = (finish.tv_sec - start.tv_sec);
+		round_elapsed += (finish.tv_nsec - start.tv_nsec) / 1e9;
 
-		while (world_get_infected(&world) > 0) {
-			if (total_rounds > 0 && rounds >= total_rounds) {
-				break;
-			}
+		total_elapsed += round_elapsed;
+	}
+	std::cout << "------------------------------------\n";
+	std::cout << "Saving Timeline\n";
 
-			if (rounds >= grids_size) {
-				std::cout << "Round " << rounds << '\n';
-				const size_t new_size = grids_size * 2;
-				int **new_grids = (int **)std::realloc(
-					grids, grids_size * params.worldWidth *
-						       params.worldHeight *
-						       sizeof(*world.grid));
-				if (!new_grids) {
-					std::cerr
-						<< "Failed to allocate more memory to store world state"
-						<< '\n';
-					break;
-				}
-				grids_size *= new_size;
-				grids = new_grids;
-			}
-
-			void *ret = world_prepare_update(&world);
-			if (!ret) {
-				std::cerr << "Failed to Update World" << '\n';
-				break;
-			}
-
-			clock_gettime(CLOCK_MONOTONIC, &start);
-			world_update(&world, ret);
-			clock_gettime(CLOCK_MONOTONIC, &finish);
-
-			double round_elapsed = (finish.tv_sec - start.tv_sec);
-			round_elapsed += (finish.tv_nsec - start.tv_nsec) / 1e9;
-
-			total_elapsed += round_elapsed;
-
-			grids[rounds] = (int *)malloc(params.worldWidth *
-						      params.worldHeight *
-						      sizeof(**grids));
-			if (!grids[rounds]) {
-				std::cerr
-					<< "Failed to allocate more memory to store world state"
-					<< '\n';
-				break;
-			}
-			std::memcpy(grids[rounds], world.grid,
-				    params.worldWidth * params.worldHeight *
-					    sizeof(*grids[rounds]));
-			++rounds;
-		}
-		std::cout << "------------------------------------\n";
-		std::cout << "Creating video\n";
-		std::cout << "------------------------------------\n";
-		std::cout << "Creating...\n";
-		create_video(grids, rounds, params.worldWidth,
-			     params.worldHeight, "plague.avi", 20, 10);
-		free(grids);
-		std::cout << "Video created\n";
+	err = timeline_save(&tl, "timeline.bin");
+	if (err < 0) {
+		std::cout << "Failed to create timeline\n";
 	} else {
-		while (world_get_infected(&world) > 0) {
-			if (total_rounds > 0 && rounds >= total_rounds) {
-				break;
-			}
-			void *ret = world_prepare_update(&world);
-			if (!ret) {
-				std::cerr << "Failed to Update World" << '\n';
-			}
-
-			clock_gettime(CLOCK_MONOTONIC, &start);
-			world_update(&world, ret);
-			clock_gettime(CLOCK_MONOTONIC, &finish);
-
-			double round_elapsed = (finish.tv_sec - start.tv_sec);
-			round_elapsed += (finish.tv_nsec - start.tv_nsec) / 1e9;
-			total_elapsed += round_elapsed;
-		}
+		std::cout << "Timeline created\n";
 	}
 
 	std::cout << "Simulation took           : " << total_elapsed << " s\n";
-	std::cout << "Number of turns           : " << rounds << '\n';
+	std::cout << "Number of turns           : " << tl.nb_rounds << '\n';
 	std::cout << "Number of healty people   : " << world_get_healthy(&world)
 		  << '\n';
 	std::cout << "Number of immunized people: " << world_get_immune(&world)
