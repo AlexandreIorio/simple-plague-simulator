@@ -6,6 +6,12 @@
 #include <string.h>
 #include <time.h>
 #include "world.h"
+#include <cuda_runtime.h>
+
+#define CUDA_SM 128
+#define CUDA_WARP_SIZE 32
+
+#define CUDA_NB_BLOCK (CUDA_SM / CUDA_WARP_SIZE)
 
 static inline size_t world_world_size(const world_parameters_t *p)
 {
@@ -161,13 +167,8 @@ void *world_prepare_update(const world_t *p)
 {
 	return calloc(world_world_size(&p->params), sizeof(*p->grid));
 }
-void world_update(world_t *p, void *raw)
+static void world_update_simple(world_t *p, state_t *tmp_world)
 {
-	const size_t world_size = world_world_size(&p->params);
-	state_t *tmp_world = raw;
-
-	memcpy(tmp_world, p->grid, world_size * sizeof(*p->grid));
-
 	for (size_t i = 0; i < p->params.worldHeight; i++) {
 		for (size_t j = 0; j < p->params.worldWidth; j++) {
 			switch (p->grid[i * p->params.worldWidth + j]) {
@@ -191,6 +192,24 @@ void world_update(world_t *p, void *raw)
 			}
 		}
 	}
+}
+static __global__ void world_update_cuda(world_t *d_p_in, world_t *d_p_out,
+					 state_t *d_tmp_world)
+{
+}
+void world_update(world_t *p, void *raw)
+{
+	const size_t world_size = world_world_size(&p->params);
+	state_t *tmp_world = raw;
+
+	memcpy(tmp_world, p->grid, world_size * sizeof(*p->grid));
+
+#ifdef __CUDACC__
+
+#else
+	world_update_simple(p, tmp_world);
+#endif
+
 	memcpy(p->grid, tmp_world, world_size * sizeof(*p->grid));
 }
 
