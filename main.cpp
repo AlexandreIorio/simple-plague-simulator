@@ -310,11 +310,11 @@ int main(int argc, char *argv[])
 		world_update(&world, ret);
 		clock_gettime(CLOCK_MONOTONIC, &finish);
 
-		err = timeline_push_round(&tl, (int *)world.grid);
-		if (err < 0) {
-			std::cerr << "Failed to save last round\n";
-			break;
-		}
+		// err = timeline_push_round(&tl, (int *)world.grid);
+		// if (err < 0) {
+		// 	std::cerr << "Failed to save last round\n";
+		// 	break;
+		// }
 		double round_elapsed = (finish.tv_sec - start.tv_sec);
 		round_elapsed += (finish.tv_nsec - start.tv_nsec) / 1e9;
 
