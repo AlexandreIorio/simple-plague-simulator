@@ -227,21 +227,43 @@ void world_update(world_t *p, void *raw)
 	memcpy(tmp_world, p->grid, world_size * sizeof(*p->grid));
 
 #ifdef __CUDACC__
-    world_t *d_p_in, *d_p_out;
-    state_t *d_tmp_world;
 
-    cudaMalloc(&d_p_in, sizeof(world_t));
-    cudaMalloc(&d_p_out, sizeof(world_t));
+world_t *d_p_in, *d_p_out;
+state_t *d_tmp_world;
 
-    cudaMalloc(&d_tmp_world, world_size * sizeof(*tmp_world));
-    cudaMalloc(&d_p_in->grid, world_size * sizeof(*p->grid));
-    cudaMalloc(&d_p_in->infectionDurationGrid, world_size * sizeof(*p->infectionDurationGrid));
-    
-    cudaMemcpy(d_p_in, p, sizeof(world_t), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_p_in->grid, p->grid, world_size * sizeof(*p->grid), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_p_in->infectionDurationGrid, p->infectionDurationGrid, world_size * sizeof(*p->infectionDurationGrid), cudaMemcpyHostToDevice);
+cudaMalloc(&d_p_in, sizeof(world_t));
+cudaMalloc(&d_p_out, sizeof(world_t));
+cudaMalloc(&d_tmp_world, world_size * sizeof(*tmp_world));
 
-    world_update_cuda(d_p_in, d_p_out, d_tmp_world);
+// Copy the CPU structure to a temporary copy on the CPU
+world_t h_p_in = *p;
+
+// Allocate arrays on the GPU
+cudaMalloc(&h_p_in.grid, world_size * sizeof(*p->grid));
+cudaMalloc(&h_p_in.infectionDurationGrid, world_size * sizeof(*p->infectionDurationGrid));
+
+// Copy the array data to the GPU
+cudaMemcpy(h_p_in.grid, p->grid, world_size * sizeof(*p->grid), cudaMemcpyHostToDevice);
+cudaMemcpy(h_p_in.infectionDurationGrid, p->infectionDurationGrid, world_size * sizeof(*p->infectionDurationGrid), cudaMemcpyHostToDevice);
+
+// Update `d_p_in` with the correct GPU addresses
+cudaMemcpy(d_p_in, &h_p_in, sizeof(world_t), cudaMemcpyHostToDevice);
+
+dim3 blockDim(16, 16);
+dim3 gridDim((p->params.worldWidth + blockDim.x - 1) / blockDim.x, 
+             (p->params.worldHeight + blockDim.y - 1) / blockDim.y);
+
+
+world_update_cuda<<<gridDim, blockDim>>>(d_p_in, d_p_out, d_tmp_world);
+cudaDeviceSynchronize();
+
+cudaMemcpy(p->grid, h_p_in.grid, world_size * sizeof(*p->grid), cudaMemcpyDeviceToHost);
+
+cudaFree(h_p_in.grid);
+cudaFree(h_p_in.infectionDurationGrid);
+cudaFree(d_p_in);
+cudaFree(d_p_out);
+cudaFree(d_tmp_world);
 
 #else
 	world_update_simple(p, tmp_world);

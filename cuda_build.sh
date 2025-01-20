@@ -1,0 +1,1 @@
+nvcc -o simulation main.cpp world.c -I. --compiler-options '-Wall -Wextra -O2' -lcudart
