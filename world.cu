@@ -74,10 +74,10 @@ int world_init(world_t *world, const world_parameters_t *p)
 		return -1;
 	}
 
-	world->grid = malloc(world_size * sizeof(*world->grid));
+	world->grid = (state_t*)malloc(world_size * sizeof(*world->grid));
 
 	world->infectionDurationGrid =
-		malloc(world_size * sizeof(*world->infectionDurationGrid));
+		(state_t*)malloc(world_size * sizeof(*world->infectionDurationGrid));
 
 	if (!world->grid || !world->infectionDurationGrid) {
 		return -1;
@@ -222,7 +222,7 @@ static __global__ void world_update_cuda(world_t *d_p_in, world_t *d_p_out,
 void world_update(world_t *p, void *raw)
 {
 	const size_t world_size = world_world_size(&p->params);
-	state_t *tmp_world = raw;
+	state_t *tmp_world = (state_t *)raw;
 
 	memcpy(tmp_world, p->grid, world_size * sizeof(*p->grid));
 
