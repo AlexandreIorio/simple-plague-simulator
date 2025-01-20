@@ -11,7 +11,7 @@ SRC_C = $(wildcard *.c)
 OBJ_CPP = $(SRC_CPP:.cpp=.o)
 OBJ_CU = $(SRC_CU:.cu=.o)
 OBJ_C = $(SRC_C:.c=.o)
-OBJ = $(OBJ_CPP) $(OBJ_C) $(OBJ_CU)
+OBJ = $(OBJ_CPP) $(OBJ_CU) $(OBJ_C) 
 
 all: $(TARGET)
 
@@ -23,6 +23,9 @@ $(TARGET): $(OBJ)
 
 %.o: %.c
 	$(CC) $(CCFLAGS) -c $< -o $@ 
+
+%.o: %.cu
+	$(CXX) $(CXXFLAGS) -x c++ -c $< -o $@
 
 clean:
 	rm -f $(OBJ) $(TARGET)
