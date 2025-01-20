@@ -93,8 +93,7 @@ void __device__ cuda_world_handle_infected(world_t *p, state_t *world, curandSta
 	}
 }
 
-static __global__ void cuda_world_update(world_t *d_p_in, world_t *d_p_out,
-					 state_t *d_tmp_world, curandState *state)
+static __global__ void cuda_world_update(world_t *d_p_in, world_t *d_p_out, state_t *d_tmp_world, curandState *state)
 {
     size_t i = blockIdx.y * blockDim.y + threadIdx.y;
     size_t j = blockIdx.x * blockDim.x + threadIdx.x;
@@ -347,11 +346,10 @@ dim3 blockDim(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
 dim3 gridDim((p->params.worldWidth + blockDim.x - 1) / blockDim.x, 
              (p->params.worldHeight + blockDim.y - 1) / blockDim.y);
 
-setup_kernel<<<gridDim, blockDim>>>(d_p_in, time(NULL));
+setup_kernel<<<gridDim, blockDim>>>(dev_curand_states, time(NULL));
 generate_randoms <<<gridDim, blockDim>>>(dev_curand_states, randomValues);
 
 cuda_world_update<<<gridDim, blockDim>>>(d_p_in, d_p_out, d_tmp_world, dev_curand_states);
-
 
 cudaDeviceSynchronize();
 
