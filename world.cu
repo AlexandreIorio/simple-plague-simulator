@@ -313,7 +313,7 @@ void world_update(world_t *p, void *raw)
 	memcpy(tmp_world, p->grid, world_size * sizeof(*p->grid));
 
 #ifdef __CUDACC__
-
+//TODO : Allo0uer out et utiliser d_p_out dans toutes les methodes
 world_t *d_p_in, *d_p_out;
 state_t *d_tmp_world;
 // used to generate random numbers
@@ -323,8 +323,8 @@ float* randomValues;
 cudaMalloc(&d_p_in, sizeof(world_t));
 cudaMalloc(&d_p_out, sizeof(world_t));
 cudaMalloc(&d_tmp_world, world_size * sizeof(*tmp_world));
-cudaMalloc(&h_p_in.grid, world_size * sizeof(*p->grid));
-cudaMalloc(&h_p_in.infectionDurationGrid, world_size * sizeof(*p->infectionDurationGrid));
+cudaMalloc(&d_p_in.grid, world_size * sizeof(*p->grid));
+cudaMalloc(&d_p_in.infectionDurationGrid, world_size * sizeof(*p->infectionDurationGrid));
 
 // Allocate memory for the random number generator
 cudaMalloc(&dev_curand_states, CUDA_NB_THREAD * sizeof(curandState));
@@ -348,8 +348,8 @@ cudaDeviceSynchronize();
 
 cudaMemcpy(p->grid, h_p_in.grid, world_size * sizeof(*p->grid), cudaMemcpyDeviceToHost);
 
-cudaFree(h_p_in.grid);
-cudaFree(h_p_in.infectionDurationGrid);
+cudaFree(d_p_in.grid);
+cudaFree(d_p_in.infectionDurationGrid);
 cudaFree(d_p_in);
 cudaFree(d_p_out);
 cudaFree(d_tmp_world);
