@@ -197,8 +197,8 @@ static void world_update_simple(world_t *p, state_t *tmp_world)
 static __global__ void world_update_cuda(world_t *d_p_in, world_t *d_p_out,
 					 state_t *d_tmp_world)
 {
-    int i = blockIdx.y * blockDim.y + threadIdx.y;
-    int j = blockIdx.x * blockDim.x + threadIdx.x;
+    size_t i = blockIdx.y * blockDim.y + threadIdx.y;
+    size_t j = blockIdx.x * blockDim.x + threadIdx.x;
     
     if (i < d_p_in->params.worldHeight && j < d_p_in->params.worldWidth) {
         int index = i * d_p_in->params.worldWidth + j;
