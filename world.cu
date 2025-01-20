@@ -139,14 +139,14 @@ bool world_should_infect(const world_t *p, size_t i, size_t j, int probability)
 	return world_get_nb_infected_neighbours(p, i, j) &&
 	       should_happen(probability);
 }
-void world_infect_if_should_infect(const world_t *p, state_t *world, size_t i,
+void __device__ world_infect_if_should_infect(const world_t *p, state_t *world, size_t i,
 				   size_t j, int probability)
 {
 	if (world_should_infect(p, i, j, probability)) {
 		world[i * p->params.worldWidth + j] = INFECTED;
 	}
 }
-void world_handle_infected(world_t *p, state_t *world, size_t i, size_t j)
+void __device__ world_handle_infected(world_t *p, state_t *world, size_t i, size_t j)
 {
 	const size_t index = i * p->params.worldWidth + j;
 
