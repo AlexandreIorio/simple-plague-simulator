@@ -284,7 +284,7 @@ int main(int argc, char *argv[])
 	double total_elapsed = 0;
 	timeline_t tl;
 
-	ret = timeline_init(&tl, &world.params);
+	ret = timeline_init(&tl, &world.params, "timeline.bin");
 	if (ret < 0) {
 		std::cerr << "Failed to allocate memory to store world state"
 			  << '\n';
@@ -295,6 +295,11 @@ int main(int argc, char *argv[])
 		if (total_rounds > 0 && tl.nb_rounds >= total_rounds) {
 			break;
 		}
+
+		if (tl.nb_rounds % 100 == 0) {
+			std::cout << "Round" << tl.nb_rounds << '\n';
+		}
+
 		void *ret = world_prepare_update(&world);
 		if (!ret) {
 			std::cerr << "Failed to Update World" << '\n';
@@ -318,7 +323,7 @@ int main(int argc, char *argv[])
 	std::cout << "------------------------------------\n";
 	std::cout << "Saving Timeline\n";
 
-	err = timeline_save(&tl, "timeline.bin");
+	err = timeline_save(&tl);
 	if (err < 0) {
 		std::cout << "Failed to create timeline\n";
 	} else {
