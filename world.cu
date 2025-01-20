@@ -22,15 +22,14 @@ __global__ void setup_kernel(curandState* state, uint64_t seed) {
     size_t i = blockIdx.y * blockDim.y + threadIdx.y;
     size_t j = blockIdx.x * blockDim.x + threadIdx.x;
 
-    int index = i * worldWidth + j;
+    int index = i * gridDim.x * blockDim.x + j;
     curand_init(seed, index, 0, &state[index]);
-    
 }
 __global__ void generate_randoms(curandState* globalState, float* randoms) {
     size_t i = blockIdx.y * blockDim.y + threadIdx.y;
     size_t j = blockIdx.x * blockDim.x + threadIdx.x;
 
-    int index = i * worldWidth + j;
+    int index = i * gridDim.x * blockDim.x + j;
     curandState localState = globalState[index];  
     randoms[index] = curand_uniform(&localState);
     globalState[index] = localState;
@@ -73,7 +72,7 @@ bool __device__ cuda_world_should_infect(const world_t *p, curandState *state, s
 void __device__ cuda_world_infect_if_should_infect(const world_t *p, state_t *world, curandState *state, size_t i,
 				   size_t j, int probability)
 {
-	if (cuda_world_should_infect(p, i, j, probability)) {
+	if (cuda_world_should_infect(p,state, i, j, probability)) {
 		world[i * p->params.worldWidth + j] = INFECTED;
 	}
 }
@@ -82,7 +81,7 @@ void __device__ cuda_world_handle_infected(world_t *p, state_t *world, curandSta
 	const size_t index = i * p->params.worldWidth + j;
 
 	if (p->infectionDurationGrid[index] == 0) {
-		if (cuda_should_happen(p->params.deathProbability, state)) {
+		if (cuda_should_happen(p->params.deathProbability, state, i, j)) {
 			world[index] = DEAD;
 		} else {
 			world[index] = IMMUNE;
@@ -350,7 +349,7 @@ dim3 gridDim((p->params.worldWidth + blockDim.x - 1) / blockDim.x,
 
 setup_kernel<<<gridDim, blockDim>>>(d_p_in, time(NULL));
 generate_randoms <<<gridDim, blockDim>>>(dev_curand_states, randomValues);
-world_update_cuda<<<gridDim, blockDim>>>(d_p_in, d_p_out, d_tmp_world);
+world_update_cuda<<<gridDim, blockDim>>>(d_p_in, d_p_out, d_tmp_world, dev_curand_states);
 
 cudaDeviceSynchronize();
 
