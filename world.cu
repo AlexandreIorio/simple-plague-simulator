@@ -17,7 +17,7 @@ static inline size_t world_world_size(const world_parameters_t *p)
 {
 	return p->worldWidth * p->worldHeight;
 }
-static inline bool should_happen(int probability)
+static inline __device__ bool should_happen(int probability)
 {
 	return probability < (rand() % 100);
 }
@@ -134,7 +134,7 @@ size_t world_get_dead(const world_t *p)
 	return get_in_state(p, DEAD);
 }
 
-bool world_should_infect(const world_t *p, size_t i, size_t j, int probability)
+bool __device__ world_should_infect(const world_t *p, size_t i, size_t j, int probability)
 {
 	return world_get_nb_infected_neighbours(p, i, j) &&
 	       should_happen(probability);
