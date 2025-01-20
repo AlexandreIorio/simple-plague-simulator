@@ -6,10 +6,12 @@ LDFLAGS = -O3 `pkg-config --libs opencv4`
 TARGET = plague-simulator
 
 SRC_CPP = $(wildcard *.cpp)
+SRC_CU = $(wildcard *.cu)
 SRC_C = $(wildcard *.c)
 OBJ_CPP = $(SRC_CPP:.cpp=.o)
+OBJ_CU = $(SRC_CU:.cu=.o)
 OBJ_C = $(SRC_C:.c=.o)
-OBJ = $(OBJ_CPP) $(OBJ_C)
+OBJ = $(OBJ_CPP) $(OBJ_C) $(OBJ_CU)
 
 all: $(TARGET)
 
