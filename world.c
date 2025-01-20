@@ -167,6 +167,7 @@ void *world_prepare_update(const world_t *p)
 {
 	return calloc(world_world_size(&p->params), sizeof(*p->grid));
 }
+
 static void world_update_simple(world_t *p, state_t *tmp_world)
 {
 	for (size_t i = 0; i < p->params.worldHeight; i++) {
@@ -196,6 +197,27 @@ static void world_update_simple(world_t *p, state_t *tmp_world)
 static __global__ void world_update_cuda(world_t *d_p_in, world_t *d_p_out,
 					 state_t *d_tmp_world)
 {
+    int i = blockIdx.y * blockDim.y + threadIdx.y;
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
+    
+    if (i < d_p_in->params.worldHeight && j < d_p_in->params.worldWidth) {
+        int index = i * d_p_in->params.worldWidth + j;
+        
+        switch (d_p_in->grid[index]) {
+            case HEALTHY:
+                world_infect_if_should_infect(d_p_in, d_tmp_world, i, j, d_p_in->params.healthyInfectionProbability);
+                break;
+            case IMMUNE:
+                world_infect_if_should_infect(d_p_in, d_tmp_world, i, j, d_p_in->params.immuneInfectionProbability);
+                break;
+            case INFECTED:
+                world_handle_infected(d_p_in, d_tmp_world, i, j);
+                break;
+            case EMPTY:
+            case DEAD:
+                break;
+        }
+    }
 }
 void world_update(world_t *p, void *raw)
 {
@@ -205,6 +227,21 @@ void world_update(world_t *p, void *raw)
 	memcpy(tmp_world, p->grid, world_size * sizeof(*p->grid));
 
 #ifdef __CUDACC__
+    world_t *d_p_in, *d_p_out;
+    state_t *d_tmp_world;
+
+    cudaMalloc(&d_p_in, sizeof(world_t));
+    cudaMalloc(&d_p_out, sizeof(world_t));
+
+    cudaMalloc(&d_tmp_world, world_size * sizeof(*tmp_world));
+    cudaMalloc(&d_p_in->grid, world_size * sizeof(*p->grid));
+    cudaMalloc(&d_p_in->infectionDurationGrid, world_size * sizeof(*p->infectionDurationGrid));
+    
+    cudaMemcpy(d_p_in, p, sizeof(world_t), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_p_in->grid, p->grid, world_size * sizeof(*p->grid), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_p_in->infectionDurationGrid, p->infectionDurationGrid, world_size * sizeof(*p->infectionDurationGrid), cudaMemcpyHostToDevice);
+
+    world_update_cuda(d_p_in, d_p_out, d_tmp_world);
 
 #else
 	world_update_simple(p, tmp_world);
