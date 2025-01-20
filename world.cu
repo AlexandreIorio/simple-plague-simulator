@@ -7,6 +7,7 @@
 #include <time.h>
 #include "world.h"
 #include <cuda_runtime.h>
+#include <curand_kernel.h>
 
 #define CUDA_SM 128
 #define CUDA_WARP_SIZE 32
@@ -19,7 +20,7 @@ static inline size_t world_world_size(const world_parameters_t *p)
 }
 static inline __device__ bool should_happen(int probability)
 {
-	return probability < (rand() % 100);
+	return probability < (curand() % 100);
 }
 static size_t get_in_state(const world_t *p, state_t state)
 {
