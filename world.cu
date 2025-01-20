@@ -352,10 +352,7 @@ generate_randoms <<<gridDim, blockDim>>>(dev_curand_states, randomValues);
 cudaDeviceSynchronize();
 cuda_world_update<<<gridDim, blockDim>>>(d_p_in, d_p_out, d_tmp_world, dev_curand_states);
 cudaDeviceSynchronize();
-cudaError_t err = cudaGetLastError();
-if (err != cudaSuccess) {
-    printf("CUDA Error: %s",cudaGetErrorString(err));
-}
+
 cudaMemcpy(p->grid, h_p_in.grid, world_size * sizeof(*p->grid), cudaMemcpyDeviceToHost);
 
 cudaFree(h_p_in.grid);
