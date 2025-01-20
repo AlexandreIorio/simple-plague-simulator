@@ -347,12 +347,15 @@ dim3 gridDim((p->params.worldWidth + blockDim.x - 1) / blockDim.x,
              (p->params.worldHeight + blockDim.y - 1) / blockDim.y);
 
 setup_kernel<<<gridDim, blockDim>>>(dev_curand_states, time(NULL));
-generate_randoms <<<gridDim, blockDim>>>(dev_curand_states, randomValues);
-
-cuda_world_update<<<gridDim, blockDim>>>(d_p_in, d_p_out, d_tmp_world, dev_curand_states);
-
 cudaDeviceSynchronize();
-
+generate_randoms <<<gridDim, blockDim>>>(dev_curand_states, randomValues);
+cudaDeviceSynchronize();
+cuda_world_update<<<gridDim, blockDim>>>(d_p_in, d_p_out, d_tmp_world, dev_curand_states);
+cudaDeviceSynchronize();
+cudaError_t err = cudaGetLastError();
+if (err != cudaSuccess) {
+    std::cerr << "CUDA Error: " << cudaGetErrorString(err) << std::endl;
+}
 cudaMemcpy(p->grid, h_p_in.grid, world_size * sizeof(*p->grid), cudaMemcpyDeviceToHost);
 
 cudaFree(h_p_in.grid);
