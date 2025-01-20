@@ -354,7 +354,7 @@ cuda_world_update<<<gridDim, blockDim>>>(d_p_in, d_p_out, d_tmp_world, dev_curan
 cudaDeviceSynchronize();
 cudaError_t err = cudaGetLastError();
 if (err != cudaSuccess) {
-    std::cerr << "CUDA Error: " << cudaGetErrorString(err) << std::endl;
+    printf("CUDA Error: %s",cudaGetErrorString(err));
 }
 cudaMemcpy(p->grid, h_p_in.grid, world_size * sizeof(*p->grid), cudaMemcpyDeviceToHost);
 
