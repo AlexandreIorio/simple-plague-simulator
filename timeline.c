@@ -24,8 +24,8 @@ int timeline_init(timeline_t *tl, const world_parameters_t *params,
 
 int timeline_push_round(timeline_t *tl, int *grid)
 {
-	fwrite(grid, sizeof(*grid),
-	       tl->params.worldWidth * tl->params.worldHeight, tl->fp);
+	// fwrite(grid, sizeof(*grid),
+	//        tl->params.worldWidth * tl->params.worldHeight, tl->fp);
 
 	++tl->nb_rounds;
 	return 0;
