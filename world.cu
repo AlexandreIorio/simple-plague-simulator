@@ -6,22 +6,133 @@
 #include <string.h>
 #include <time.h>
 #include "world.h"
+
+#ifdef __CUDACC__
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
-
 #define CUDA_SM 128
 #define CUDA_WARP_SIZE 32
-
+#define CUDA_BLOCK_DIM_X 16
+#define CUDA_BLOCK_DIM_Y 16
+#define CUDA_NB_THREAD (CUDA_BLOCK_DIM_X * CUDA_BLOCK_DIM_Y)
 #define CUDA_NB_BLOCK (CUDA_SM / CUDA_WARP_SIZE)
+
+
+__global__ void setup_kernel(curandState* state, uint64_t seed) {
+    size_t i = blockIdx.y * blockDim.y + threadIdx.y;
+    size_t j = blockIdx.x * blockDim.x + threadIdx.x;
+
+    int index = i * worldWidth + j;
+    curand_init(seed, index, 0, &state[index]);
+    
+}
+__global__ void generate_randoms(curandState* globalState, float* randoms) {
+    size_t i = blockIdx.y * blockDim.y + threadIdx.y;
+    size_t j = blockIdx.x * blockDim.x + threadIdx.x;
+
+    int index = i * worldWidth + j;
+    curandState localState = globalState[index];  
+    randoms[index] = curand_uniform(&localState);
+    globalState[index] = localState;
+}
+
+static inline __device__ bool cuda_should_happen(int probability, curandState *state, int threadIdX, int threadIdY) 
+{
+    return probability < (curand(&state[threadIdX + threadIdY]) % 100);
+}
+
+static __device__ uint8_t cuda_world_get_nb_infected_neighbours(const world_t *p, size_t i,
+						size_t j)
+{
+	uint8_t sum = 0;
+	for (int dx = -p->params.proximity; dx <= p->params.proximity; ++dx) {
+		for (int dy = -p->params.proximity; dy <= p->params.proximity;
+		     ++dy) {
+			if (dx == 0 && dy == 0) {
+				continue;
+			}
+			const size_t ni = i + dx;
+			const size_t nj = j + dy;
+			if (!(ni < p->params.worldHeight &&
+			      nj < p->params.worldWidth)) {
+				continue;
+			}
+
+			sum += p->grid[ni * p->params.worldWidth + nj] ==
+			       INFECTED;
+		}
+	}
+	return sum;
+}
+
+bool __device__ cuda_world_should_infect(const world_t *p, curandState *state, size_t i, size_t j, int probability)
+{
+	return cuda_world_get_nb_infected_neighbours(p, i, j) &&
+	       cuda_should_happen(probability,state ,i, j);
+}
+void __device__ cuda_world_infect_if_should_infect(const world_t *p, state_t *world, curandState *state, size_t i,
+				   size_t j, int probability)
+{
+	if (cuda_world_should_infect(p, i, j, probability)) {
+		world[i * p->params.worldWidth + j] = INFECTED;
+	}
+}
+void __device__ cuda_world_handle_infected(world_t *p, state_t *world, curandState *state, size_t i, size_t j)
+{
+	const size_t index = i * p->params.worldWidth + j;
+
+	if (p->infectionDurationGrid[index] == 0) {
+		if (cuda_should_happen(p->params.deathProbability, state)) {
+			world[index] = DEAD;
+		} else {
+			world[index] = IMMUNE;
+			p->infectionDurationGrid[index] =
+				p->params.infectionDuration;
+		}
+	} else {
+		p->infectionDurationGrid[index]--;
+	}
+}
+
+static __global__ void world_update_cuda(world_t *d_p_in, world_t *d_p_out,
+					 state_t *d_tmp_world, curandState *state)
+{
+    size_t i = blockIdx.y * blockDim.y + threadIdx.y;
+    size_t j = blockIdx.x * blockDim.x + threadIdx.x;
+    
+    if (i < d_p_in->params.worldHeight && j < d_p_in->params.worldWidth) {
+        int index = i * d_p_in->params.worldWidth + j;
+        
+        switch (d_p_in->grid[index]) {
+            case HEALTHY:
+                cuda_world_infect_if_should_infect(d_p_in, d_tmp_world, state, i, j, d_p_in->params.healthyInfectionProbability);
+                break;
+            case IMMUNE:
+                cuda_world_infect_if_should_infect(d_p_in, d_tmp_world, state, i, j, d_p_in->params.immuneInfectionProbability);
+                break;
+            case INFECTED:
+                cuda_world_handle_infected(d_p_in, d_tmp_world, state, i, j);
+                break;
+            case EMPTY:
+            case DEAD:
+                break;
+        }
+    }
+}
+
+#endif
 
 static inline size_t world_world_size(const world_parameters_t *p)
 {
 	return p->worldWidth * p->worldHeight;
 }
-static inline __device__ bool should_happen(int probability)
+
+
+static inline bool should_happen(int probability)
 {
-	return probability < (curand() % 100);
+	return probability < (rand() % 100);
 }
+
 static size_t get_in_state(const world_t *p, state_t state)
 {
 	const size_t size = world_world_size(&p->params);
@@ -135,19 +246,19 @@ size_t world_get_dead(const world_t *p)
 	return get_in_state(p, DEAD);
 }
 
-bool __device__ world_should_infect(const world_t *p, size_t i, size_t j, int probability)
+bool world_should_infect(const world_t *p, size_t i, size_t j, int probability)
 {
 	return world_get_nb_infected_neighbours(p, i, j) &&
 	       should_happen(probability);
 }
-void __device__ world_infect_if_should_infect(const world_t *p, state_t *world, size_t i,
+void world_infect_if_should_infect(const world_t *p, state_t *world, size_t i,
 				   size_t j, int probability)
 {
 	if (world_should_infect(p, i, j, probability)) {
 		world[i * p->params.worldWidth + j] = INFECTED;
 	}
 }
-void __device__ world_handle_infected(world_t *p, state_t *world, size_t i, size_t j)
+void world_handle_infected(world_t *p, state_t *world, size_t i, size_t j)
 {
 	const size_t index = i * p->params.worldWidth + j;
 
@@ -195,31 +306,7 @@ static void world_update_simple(world_t *p, state_t *tmp_world)
 		}
 	}
 }
-static __global__ void world_update_cuda(world_t *d_p_in, world_t *d_p_out,
-					 state_t *d_tmp_world)
-{
-    size_t i = blockIdx.y * blockDim.y + threadIdx.y;
-    size_t j = blockIdx.x * blockDim.x + threadIdx.x;
-    
-    if (i < d_p_in->params.worldHeight && j < d_p_in->params.worldWidth) {
-        int index = i * d_p_in->params.worldWidth + j;
-        
-        switch (d_p_in->grid[index]) {
-            case HEALTHY:
-                world_infect_if_should_infect(d_p_in, d_tmp_world, i, j, d_p_in->params.healthyInfectionProbability);
-                break;
-            case IMMUNE:
-                world_infect_if_should_infect(d_p_in, d_tmp_world, i, j, d_p_in->params.immuneInfectionProbability);
-                break;
-            case INFECTED:
-                world_handle_infected(d_p_in, d_tmp_world, i, j);
-                break;
-            case EMPTY:
-            case DEAD:
-                break;
-        }
-    }
-}
+
 void world_update(world_t *p, void *raw)
 {
 	const size_t world_size = world_world_size(&p->params);
@@ -231,10 +318,17 @@ void world_update(world_t *p, void *raw)
 
 world_t *d_p_in, *d_p_out;
 state_t *d_tmp_world;
+// used to generate random numbers
+curandState* dev_curand_states;
+float* randomValues;
 
 cudaMalloc(&d_p_in, sizeof(world_t));
 cudaMalloc(&d_p_out, sizeof(world_t));
 cudaMalloc(&d_tmp_world, world_size * sizeof(*tmp_world));
+
+// Allocate memory for the random number generator
+cudaMalloc(&dev_curand_states, CUDA_NB_THREAD * sizeof(curandState));
+cudaMalloc(&randomValues, CUDA_NB_THREAD * sizeof(float));
 
 // Copy the CPU structure to a temporary copy on the CPU
 world_t h_p_in = *p;
@@ -250,12 +344,14 @@ cudaMemcpy(h_p_in.infectionDurationGrid, p->infectionDurationGrid, world_size * 
 // Update `d_p_in` with the correct GPU addresses
 cudaMemcpy(d_p_in, &h_p_in, sizeof(world_t), cudaMemcpyHostToDevice);
 
-dim3 blockDim(16, 16);
+dim3 blockDim(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
 dim3 gridDim((p->params.worldWidth + blockDim.x - 1) / blockDim.x, 
              (p->params.worldHeight + blockDim.y - 1) / blockDim.y);
 
-
+setup_kernel<<<gridDim, blockDim>>>(d_p_in, time(NULL));
+generate_randoms <<<gridDim, blockDim>>>(dev_curand_states, randomValues);
 world_update_cuda<<<gridDim, blockDim>>>(d_p_in, d_p_out, d_tmp_world);
+
 cudaDeviceSynchronize();
 
 cudaMemcpy(p->grid, h_p_in.grid, world_size * sizeof(*p->grid), cudaMemcpyDeviceToHost);
