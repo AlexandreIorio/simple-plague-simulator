@@ -77,7 +77,7 @@ int world_init(world_t *world, const world_parameters_t *p)
 	world->grid = (state_t*)malloc(world_size * sizeof(*world->grid));
 
 	world->infectionDurationGrid =
-		(state_t*)malloc(world_size * sizeof(*world->infectionDurationGrid));
+		(uint8_t*)malloc(world_size * sizeof(*world->infectionDurationGrid));
 
 	if (!world->grid || !world->infectionDurationGrid) {
 		return -1;
