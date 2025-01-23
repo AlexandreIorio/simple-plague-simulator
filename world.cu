@@ -81,7 +81,7 @@ void __device__ cuda_world_handle_infected(world_t *p, state_t *world, curandSta
 	const size_t index = i * p->params.worldWidth + j;
 
 	if (p->infectionDurationGrid[index] == 0) {
-		if (cuda_should_happen(p_in->params.deathProbability, state, i, j)) {
+		if (cuda_should_happen(p->params.deathProbability, state, i, j)) {
 			world[index] = DEAD;
 		} else {
 			world[index] = IMMUNE;
