@@ -76,20 +76,20 @@ void __device__ cuda_world_infect_if_should_infect(const world_t *p, state_t *wo
 		world[i * p->params.worldWidth + j] = INFECTED;
 	}
 }
-void __device__ cuda_world_handle_infected(world_t *p_in, state_t *world, curandState *state, size_t i, size_t j)
+void __device__ cuda_world_handle_infected(world_t *p, state_t *world, curandState *state, size_t i, size_t j)
 {
 	const size_t index = i * p_in->params.worldWidth + j;
 
-	if (p_in->infectionDurationGrid[index] == 0) {
+	if (p->infectionDurationGrid[index] == 0) {
 		if (cuda_should_happen(p_in->params.deathProbability, state, i, j)) {
 			world[index] = DEAD;
 		} else {
 			world[index] = IMMUNE;
-			p_out->infection_duration_grid[index] =
+			p->infectionDurationGrid[index] =
 				infection_durations;
 		}
 	} else {
-		p_out->infection_duration_grid[index]--;
+		p->infectionDurationGrid[index]--;
 	}
 }
 
