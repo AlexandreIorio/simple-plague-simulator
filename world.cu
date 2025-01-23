@@ -314,25 +314,25 @@ void world_update(world_t *p, void *raw)
 	memcpy(tmp_world, p->grid, world_size * sizeof(*p->grid));
 
 #ifdef __CUDACC__
-    world_t *d_p_in;
-    state_t *d_tmp_world;
-    // used to generate random numbers
+    world_t* d_p_in;
+    state_t* d_tmp_world;
     curandState* dev_curand_states;
     float* randomValues;
 
+    // Allocate memory for the world struct and its members
     cudaMalloc(&d_p_in, sizeof(world_t));
+    cudaMalloc(&(d_p_in->grid), world_size * sizeof(state_t));
+    cudaMalloc(&(d_p_in->infectionDurationGrid), world_size * sizeof(uint8_t));
     cudaMalloc(&d_tmp_world, world_size * sizeof(state_t));
-    cudaMalloc(&d_p_in.grid, world_size * sizeof(state_t));
-    cudaMalloc(&d_p_in.infectionDurationGrid, world_size * sizeof(uint8_t));
 
-    // Allocate memory for the random number generator
+    // Allocate memory for random number generator
     cudaMalloc(&dev_curand_states, CUDA_NB_THREAD * sizeof(curandState));
     cudaMalloc(&randomValues, CUDA_NB_THREAD * sizeof(float));
 
-    // Copy the array data to the GPU
-    cudaMemcpy(d_p_in.grid, p->grid, world_size * sizeof(state_t), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_p_in.infectionDurationGrid, p->infectionDurationGrid, world_size * sizeof(uint8_t), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_p_in.params, &p->params, sizeof(p->params), cudaMemcpyHostToDevice);
+    // Copy data to GPU
+    cudaMemcpy(d_p_in->grid, p->grid, world_size * sizeof(state_t), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_p_in->infectionDurationGrid, p->infectionDurationGrid, world_size * sizeof(uint8_t), cudaMemcpyHostToDevice);
+    cudaMemcpy(&(d_p_in->params), &p->params, sizeof(p->params), cudaMemcpyHostToDevice);
 
     dim3 blockDim(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
     dim3 gridDim((p->params.worldWidth + blockDim.x - 1) / blockDim.x, 
@@ -340,17 +340,20 @@ void world_update(world_t *p, void *raw)
 
     setup_kernel<<<gridDim, blockDim>>>(dev_curand_states, time(NULL));
     cudaDeviceSynchronize();
-    generate_randoms <<<gridDim, blockDim>>>(dev_curand_states, randomValues);
+    generate_randoms<<<gridDim, blockDim>>>(dev_curand_states, randomValues);
     cudaDeviceSynchronize();
     cuda_world_update<<<gridDim, blockDim>>>(d_p_in, d_tmp_world, dev_curand_states);
     cudaDeviceSynchronize();
 
-    cudaMemcpy(p->grid, d_p_in.grid, world_size * sizeof(*p->grid), cudaMemcpyDeviceToHost);
+    cudaMemcpy(p->grid, d_p_in->grid, world_size * sizeof(*p->grid), cudaMemcpyDeviceToHost);
 
-    cudaFree(d_p_in.grid);
-    cudaFree(d_p_in.infectionDurationGrid);
+    // Free GPU memory
+    cudaFree(d_p_in->grid);
+    cudaFree(d_p_in->infectionDurationGrid);
     cudaFree(d_p_in);
     cudaFree(d_tmp_world);
+    cudaFree(dev_curand_states);
+    cudaFree(randomValues);
 
 #else
 	world_update_simple(p, tmp_world);
