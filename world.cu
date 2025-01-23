@@ -330,11 +330,14 @@ void world_update(world_t *p, void *raw)
         printf("Error allocating memory for d_p_in\n");
         exit(1);
     }
+    printf("Debug line : %d passed\n", __LINE__);
+
     err = cudaMalloc(&(d_p_in->grid), world_size * sizeof(state_t));
     if (err != cudaSuccess) {
         printf("Error allocating memory for d_p_in->grid\n");
         exit(1);
     }
+    printf("Debug line : %d passed\n", __LINE__);
 
     err = cudaMalloc(&(d_p_in->infectionDurationGrid), world_size * sizeof(uint8_t));
 
@@ -342,6 +345,7 @@ void world_update(world_t *p, void *raw)
         printf("Error allocating memory for d_p_in->infectionDurationGrid\n");
         exit(1);
     }
+    printf("Debug line : %d passed\n", __LINE__);
 
     err = cudaMalloc(&d_tmp_world, world_size * sizeof(state_t));
 
@@ -349,8 +353,8 @@ void world_update(world_t *p, void *raw)
         printf("Error allocating memory for d_tmp_world\n");
         exit(1);
     }
-
     printf("Debug line : %d passed\n", __LINE__);
+
 
     // Allocate memory for random number generator
     cudaMalloc(&dev_curand_states, CUDA_NB_THREAD * sizeof(curandState));
