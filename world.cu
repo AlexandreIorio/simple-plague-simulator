@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <time.h>
 #include "world.h"
+
 #define __CUDACC__
 #ifdef __CUDACC__
 #include <cuda_runtime.h>
@@ -318,7 +319,7 @@ void world_update(world_t *p, void *raw)
 #ifdef __CUDACC__
     world_t* d_p_in;
     state_t* d_tmp_world;
-    cuda_error_t err;
+    cudaError_t err;
     curandState* dev_curand_states;
     float* randomValues;
     printf("Debug line : %d passed\n", __LINE__);
