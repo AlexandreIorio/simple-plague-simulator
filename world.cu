@@ -321,17 +321,17 @@ void world_update(world_t *p, void *raw)
     float* randomValues;
 
     cudaMalloc(&d_p_in, sizeof(world_t));
-    cudaMalloc(&d_tmp_world, world_size * sizeof(*tmp_world));
-    cudaMalloc(&d_p_in.grid, world_size * sizeof(*p->grid));
-    cudaMalloc(&d_p_in.infectionDurationGrid, world_size * sizeof(*p->infectionDurationGrid));
+    cudaMalloc(&d_tmp_world, world_size * sizeof(state_t));
+    cudaMalloc(&d_p_in.grid, world_size * sizeof(state_t));
+    cudaMalloc(&d_p_in.infectionDurationGrid, world_size * sizeof(uint8_t));
 
     // Allocate memory for the random number generator
     cudaMalloc(&dev_curand_states, CUDA_NB_THREAD * sizeof(curandState));
     cudaMalloc(&randomValues, CUDA_NB_THREAD * sizeof(float));
 
     // Copy the array data to the GPU
-    cudaMemcpy(d_p_in.grid, p->grid, world_size * sizeof(*p->grid), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_p_in.infectionDurationGrid, p->infectionDurationGrid, world_size * sizeof(*p->infectionDurationGrid), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_p_in.grid, p->grid, world_size * sizeof(state_t), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_p_in.infectionDurationGrid, p->infectionDurationGrid, world_size * sizeof(uint8_t), cudaMemcpyHostToDevice);
     cudaMemcpy(d_p_in.params, &p->params, sizeof(p->params), cudaMemcpyHostToDevice);
 
     dim3 blockDim(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
