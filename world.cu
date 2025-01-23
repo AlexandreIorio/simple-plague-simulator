@@ -276,9 +276,83 @@ void world_handle_infected(world_t *p, state_t *world, size_t i, size_t j)
 	}
 }
 
+#ifdef __CUDACC__
+
+typedef struct {
+	world_t *d_world;
+	state_t *d_curr_grid;
+	// store this so we can free them later
+	state_t *d_tmp_grid;
+	uint8_t *d_infection_duration_grid;
+} cuda_prepare_update_t;
+
+static cuda_prepare_update_t cuda_prepare;
+
+#endif
+
 void *world_prepare_update(const world_t *p)
 {
+#ifdef __CUDACC__
+	const size_t world_size = world_world_size(&p->params);
+	int err;
+	state_t *d_grid;
+	err = cudaMalloc((void **)&(d_grid), world_size * sizeof(*d_grid));
+	if (err != cudaSuccess) {
+		return NULL;
+	}
+	state_t *d_tmp_grid;
+	err = cudaMalloc((void **)&(d_tmp_world),
+			 world_size * sizeof(*d_tmp_world));
+
+	if (err != cudaSuccess) {
+		cudaFree(d_grid);
+		return NULL;
+	}
+
+	uint8_t *d_infection_duration_grid;
+
+	err = cudaMalloc((void **)&(d_infection_duration_grid),
+			 world_size * sizeof(*d_infection_duration_grid));
+
+	if (err != cudaSuccess) {
+		cudaFree(d_grid);
+		cudaFree(d_tmp_grid);
+		return NULL;
+	}
+	world_t world;
+
+	world.grid = d_grid;
+	world.infectionDurationGrid = d_infection_duration_grid;
+	world.params = p->params;
+
+	world_t *d_world;
+
+	err = cudaMalloc((void **)&(d_world), sizeof(*d_world));
+
+	if (err != cudaSuccess) {
+		cudaFree(d_grid);
+		cudaFree(d_tmp_grid);
+		cudaFree(d_infection_duration_grid);
+		return NULL;
+	}
+
+	cudaMemcpy(d_tmp_grid, p->grid, world_size * sizeof(*d_tmp_grid));
+	cudaMemcpy(d_grid, p->grid, world_size * sizeof(*d_grid));
+	cudaMemcpy(d_infection_duration_grid, p->infectionDurationGrid,
+		   world_size * sizeof(*d_infection_duration_grid));
+
+	cudaMemcpy(d_world, &world, sizeof(world_t), cudaMemcpyHostToDevice);
+
+	cuda_prepare.d_world = d_world;
+	cuda_prepare.d_tmp_grid = d_tmp_grid;
+	cuda_prepare.d_grid = d_grid;
+	cuda_prepare.d_infection_duration_grid = d_infection_duration_grid;
+
+	return (void *)&cuda_prepare;
+
+#else
 	return calloc(world_world_size(&p->params), sizeof(*p->grid));
+#endif
 }
 
 static void world_update_simple(world_t *p, state_t *tmp_world)
@@ -310,100 +384,31 @@ static void world_update_simple(world_t *p, state_t *tmp_world)
 
 void world_update(world_t *p, void *raw)
 {
-	const size_t world_size = world_world_size(&p->params);
-	state_t *tmp_world = (state_t *)raw;
-
-	memcpy(tmp_world, p->grid, world_size * sizeof(*p->grid));
-    printf("Debug line : %d passed\n", __LINE__);
-
 #ifdef __CUDACC__
-    world_t* d_p_in;
-    state_t* d_tmp_world;
-    cudaError_t err;
-    curandState* dev_curand_states;
-    float* randomValues;
-    printf("Debug line : %d passed\n", __LINE__);
+	cuda_prepare_update_t *update_data = (cuda_prepare_update_t *)raw;
 
-    // Allocate memory for the world struct and its members
-    err = cudaMalloc(&d_p_in, sizeof(world_t));
-    if (err != cudaSuccess) {
-        printf("Error allocating memory for d_p_in\n");
-        exit(1);
-    }
-    printf("Debug line : %d passed\n", __LINE__);
+	dim3 blockDim(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
+	dim3 gridDim((p->params.worldWidth + blockDim.x - 1) / blockDim.x,
+		     (p->params.worldHeight + blockDim.y - 1) / blockDim.y);
 
-    err = cudaMalloc(&(d_p_in->grid), world_size * sizeof(state_t));
-    if (err != cudaSuccess) {
-        printf("Error allocating memory for d_p_in->grid\n");
-        exit(1);
-    }
-    printf("Debug line : %d passed\n", __LINE__);
+	cuda_world_update<<<gridDim, blockDim>>>(d_p_in, d_tmp_world);
 
-    err = cudaMalloc(&(d_p_in->infectionDurationGrid), world_size * sizeof(uint8_t));
+	cudaMempcy(p->grid, update_data->d_tmp_grid, cudaMemcpyDeviceToHost);
+	cudaMempcy(p->infectionDurationGrid,
+		   update_data->d_infection_duration_grid,
+		   cudaMemcpyDeviceToHost);
 
-    if (err != cudaSuccess) {
-        printf("Error allocating memory for d_p_in->infectionDurationGrid\n");
-        exit(1);
-    }
-    printf("Debug line : %d passed\n", __LINE__);
-
-    err = cudaMalloc(&d_tmp_world, world_size * sizeof(state_t));
-
-    if (err != cudaSuccess) {
-        printf("Error allocating memory for d_tmp_world\n");
-        exit(1);
-    }
-    printf("Debug line : %d passed\n", __LINE__);
-
-
-    // Allocate memory for random number generator
-    cudaMalloc(&dev_curand_states, CUDA_NB_THREAD * sizeof(curandState));
-    cudaMalloc(&randomValues, CUDA_NB_THREAD * sizeof(float));
-    printf("Debug line : %d passed\n", __LINE__);
-
-    // Copy data to GPU
-    cudaMemcpy(d_p_in->grid, p->grid, world_size * sizeof(state_t), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_p_in->infectionDurationGrid, p->infectionDurationGrid, world_size * sizeof(uint8_t), cudaMemcpyHostToDevice);
-    cudaMemcpy(&(d_p_in->params), &p->params, sizeof(p->params), cudaMemcpyHostToDevice);
-    printf("Debug line : %d passed\n", __LINE__);
-
-    dim3 blockDim(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
-    dim3 gridDim((p->params.worldWidth + blockDim.x - 1) / blockDim.x, 
-                (p->params.worldHeight + blockDim.y - 1) / blockDim.y);
-    printf("Debug line : %d passed\n", __LINE__);
-
-    setup_kernel<<<gridDim, blockDim>>>(dev_curand_states, time(NULL));
-    cudaDeviceSynchronize();
-    printf("Debug line : %d passed\n", __LINE__);
-
-    generate_randoms<<<gridDim, blockDim>>>(dev_curand_states, randomValues);
-    cudaDeviceSynchronize();
-    printf("Debug line : %d passed\n", __LINE__);
-
-    cuda_world_update<<<gridDim, blockDim>>>(d_p_in, d_tmp_world, dev_curand_states);
-    cudaDeviceSynchronize();
-    printf("Debug line : %d passed\n", __LINE__);
-
-    
-    cudaMemcpy(p->grid, d_p_in->grid, world_size * sizeof(*p->grid), cudaMemcpyDeviceToHost);
-    printf("Debug line : %d passed\n", __LINE__);
-
-
-    // Free GPU memory
-    cudaFree(d_p_in->grid);
-    cudaFree(d_p_in->infectionDurationGrid);
-    cudaFree(d_p_in);
-    cudaFree(d_tmp_world);
-    cudaFree(dev_curand_states);
-    cudaFree(randomValues);
-    printf("Debug line : %d passed\n", __LINE__);
-
+	cudaFree(update_data->d_tmp_grid);
+	cudaFree(update_data->d_grid);
+	cudaFree(update_data->d_infection_duration_grid);
+	cudaFree(update_data->d_world);
 
 #else
+	state_t *tmp_world = (state_t *)raw;
+	memcpy(tmp_world, p->grid, world_size * sizeof(*p->grid));
 	world_update_simple(p, tmp_world);
-#endif
-
 	memcpy(p->grid, tmp_world, world_size * sizeof(*p->grid));
+#endif
 }
 
 void world_destroy(world_t *w)
