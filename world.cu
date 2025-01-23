@@ -115,7 +115,8 @@ static __global__ void cuda_world_update(world_t *d_p_in, state_t *d_tmp_world, 
                 break;
         }
     }
-    d_p_in->grid[i][j] = d_tmp_world[i][j];
+    size_t index = i * d_p_in->params.worldWidth + j;
+    d_p_in->grid[index] = d_tmp_world[index];
 }
 
 #endif
