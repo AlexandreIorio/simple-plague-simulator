@@ -86,7 +86,7 @@ void __device__ cuda_world_handle_infected(world_t *p, state_t *world, curandSta
 		} else {
 			world[index] = IMMUNE;
 			p->infectionDurationGrid[index] =
-				infection_durations;
+				p->params.infectionDuration;
 		}
 	} else {
 		p->infectionDurationGrid[index]--;
