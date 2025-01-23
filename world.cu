@@ -324,9 +324,13 @@ void world_update(world_t *p, void *raw)
 
     // Allocate memory for the world struct and its members
     cudaMalloc(&d_p_in, sizeof(world_t));
+    checkLastCudaError("cudaMalloc");
     cudaMalloc(&(d_p_in->grid), world_size * sizeof(state_t));
+    checkLastCudaError("cudaMalloc");
     cudaMalloc(&(d_p_in->infectionDurationGrid), world_size * sizeof(uint8_t));
+    checkLastCudaError("cudaMalloc");
     cudaMalloc(&d_tmp_world, world_size * sizeof(state_t));
+    checkLastCudaError("cudaMalloc");
     printf("Debug line : %d passed\n", __LINE__);
 
     // Allocate memory for random number generator
