@@ -325,29 +325,25 @@ void world_update(world_t *p, void *raw)
     printf("Debug line : %d passed\n", __LINE__);
 
     // Allocate memory for the world struct and its members
-    cudaMalloc(&d_p_in, sizeof(world_t));
-    err = cudaGetLastError();
+    err = cudaMalloc(&d_p_in, sizeof(world_t));
     if (err != cudaSuccess) {
         printf("Error allocating memory for d_p_in\n");
         exit(1);
     }
-    cudaMalloc(&(d_p_in->grid), world_size * sizeof(state_t));
-    err = cudaGetLastError();
+    err = cudaMalloc(&(d_p_in->grid), world_size * sizeof(state_t));
     if (err != cudaSuccess) {
         printf("Error allocating memory for d_p_in->grid\n");
         exit(1);
     }
 
-    cudaMalloc(&(d_p_in->infectionDurationGrid), world_size * sizeof(uint8_t));
-    err = cudaGetLastError();
+    err = cudaMalloc(&(d_p_in->infectionDurationGrid), world_size * sizeof(uint8_t));
 
     if (err != cudaSuccess) {
         printf("Error allocating memory for d_p_in->infectionDurationGrid\n");
         exit(1);
     }
 
-    cudaMalloc(&d_tmp_world, world_size * sizeof(state_t));
-    err = cudaGetLastError();
+    err = cudaMalloc(&d_tmp_world, world_size * sizeof(state_t));
 
     if (err != cudaSuccess) {
         printf("Error allocating memory for d_tmp_world\n");
