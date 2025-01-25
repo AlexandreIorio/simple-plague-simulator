@@ -229,7 +229,7 @@ void *world_prepare_update(const world_t *p)
 	return (void *)&cuda_prepare;
 }
 
-void world_destroy(world_t *w);
+void world_destroy(world_t *w)
 {
 	cudaFree(w->random_state);
 	world_destroy_common(w);
