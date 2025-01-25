@@ -140,8 +140,9 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 {
 	size_t i = blockIdx.y * blockDim.y + threadIdx.y;
 	size_t j = blockIdx.x * blockDim.x + threadIdx.x;
-    printf("blockIdx.y: %d, blockDim.y: %d, threadIdx.y: %d, blockIdx.x: %d, blockDim.x: %d, threadIdx.x: %d\n i: %d, j: %d\n", blockIdx.y, blockDim.y, threadIdx.y, blockIdx.x, blockDim.x, threadIdx.x, i, j);
-	if (i < w->params.worldHeight && j < w->params.worldWidth) {
+	size_t index = i * w->params.worldWidth + j;
+    printf("index: %d\n", index);
+    if (i < w->params.worldHeight && j < w->params.worldWidth) {
 		size_t index = i * w->params.worldWidth + j;
 		switch (w->grid[index]) {
 		case HEALTHY:
