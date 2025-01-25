@@ -30,14 +30,19 @@
 	} while (0)
 
 __global__ void init_random_numbers(unsigned long seed, world_t *world) {
+    size_t i = blockIdx.y * blockDim.y + threadIdx.y;
+	size_t j = blockIdx.x * blockDim.x + threadIdx.x; 
     const size_t index = i * world->params.worldWidth + j;
     const size_t world_size = world->params.worldWidth * world->params.worldHeight;
     if (index < world_size) {   
-        curand_init(seed, index, 0, &world->dStates[index]);
+        curand_init(index, index, 0, &world->dStates[index]);
     }
 }
 
 __global__ void generate_random_numbers(world_t *world) {
+
+	size_t i = blockIdx.y * blockDim.y + threadIdx.y;
+	size_t j = blockIdx.x * blockDim.x + threadIdx.x; 
     const size_t index = i * world->params.worldWidth + j;
     const size_t world_size = world->params.worldWidth * world->params.worldHeight;
 
@@ -89,14 +94,15 @@ int world_init(world_t *world, const world_parameters_t *p)
 {
     curandState_t *d_states;
     float *d_random;
+    const size_t world_size = world_world_size(p);
 
 	int err = world_init_common(world, p);
 	if (err < 0) {
 		return err;
 	}
 
-    checkCudaErrors(cudamalloc((void **)&d_states, world_size * sizeof(*d_states)));
-    checkCudaErrors(cudamalloc((void **)&d_random, world_size * sizeof(*d_random)));
+    checkCudaErrors(cudaMalloc((void **)&d_states, world_size * sizeof(*d_states)));
+    checkCudaErrors(cudaMalloc((void **)&d_random, world_size * sizeof(*d_random)));
 
     world->dStates = d_states;
     world->dRandom = d_random;
@@ -105,7 +111,7 @@ int world_init(world_t *world, const world_parameters_t *p)
 	dim3 grid((world->params.worldWidth + block.x - 1) / block.x,
 		  (world->params.worldHeight + block.y - 1) / block.y);
  
-    init_random_numbers<<<grid, block>>>(world->dRandom, 42, world->dStates);
+    init_random_numbers<<<grid, block>>>(world);
 
 	return 0;
 }
