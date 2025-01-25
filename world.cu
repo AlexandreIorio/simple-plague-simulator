@@ -29,16 +29,20 @@
 		}                                                              \
 	} while (0)
 
-__global__ void generate_random_numbers(float *d_random, int size, unsigned long seed) {
-    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+__global__ void init_random_numbers(unsigned long seed, world_t *world) {
+    const size_t index = i * world->params.worldWidth + j;
+    const size_t world_size = world->params.worldWidth * world->params.worldHeight;
+    if (index < world_size) {   
+        curand_init(seed, index, 0, &world->dStates[index]);
+    }
+}
 
-    if (idx < size) {
-        // Initialisation de l'état du générateur
-        curandState state;
-        curand_init(seed, idx, 0, &state);
+__global__ void generate_random_numbers(world_t *world) {
+    const size_t index = i * world->params.worldWidth + j;
+    const size_t world_size = world->params.worldWidth * world->params.worldHeight;
 
-        // Génération d'un nombre aléatoire entre 0 et 1
-        d_random[idx] = curand_uniform(&state);
+    if (index < world_size) {   
+        world->dRandom[index] = curand_uniform(&world->dStates[index]);
     }
 }
 
@@ -77,17 +81,31 @@ typedef struct {
 	// store this so we can free them later
 	state_t *d_tmp_grid;
 	uint8_t *d_infection_duration_grid;
-    float *d_random;
 } cuda_prepare_update_t;
 
 static cuda_prepare_update_t cuda_prepare;
 
 int world_init(world_t *world, const world_parameters_t *p)
 {
+    curandState_t *d_states;
+    float *d_random;
+
 	int err = world_init_common(world, p);
 	if (err < 0) {
 		return err;
 	}
+
+    checkCudaErrors(cudamalloc((void **)&d_states, world_size * sizeof(*d_states)));
+    checkCudaErrors(cudamalloc((void **)&d_random, world_size * sizeof(*d_random)));
+
+    world->dStates = d_states;
+    world->dRandom = d_random;
+
+	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
+	dim3 grid((world->params.worldWidth + block.x - 1) / block.x,
+		  (world->params.worldHeight + block.y - 1) / block.y);
+ 
+    init_random_numbers<<<grid, block>>>(world->dRandom, 42, world->dStates);
 
 	return 0;
 }
@@ -96,7 +114,7 @@ bool __device__ world_should_infect(world_t *p, size_t i, size_t j,
 				    int probability)
 {
 	return world_get_nb_infected_neighbours(p, i, j) &&
-	       should_happen(probability, p->d_random[i * p->params.worldWidth + j]);
+	       should_happen(probability, p->dRandom[i * p->params.worldWidth + j]);
 }
 void __device__ world_infect_if_should_infect(world_t *p, state_t *grid,
 					      size_t i, size_t j,
@@ -162,7 +180,11 @@ void world_update(world_t *p, void *raw)
 	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
 	dim3 grid((p->params.worldWidth + block.x - 1) / block.x,
 		  (p->params.worldHeight + block.y - 1) / block.y);
-  
+
+    generate_random_numbers<<<grid, block>>>(update_data->d_random, update_data->d_world);
+
+    checkCudaErrors(cudaDeviceSynchronize()); 
+
 	world_update_k<<<grid, block>>>(update_data->d_world,
 					  update_data->d_tmp_grid);
 
@@ -182,7 +204,6 @@ void world_update(world_t *p, void *raw)
 	cudaFree(update_data->d_curr_grid);
 	cudaFree(update_data->d_infection_duration_grid);
 	cudaFree(update_data->d_world);
-    cudaFree(update_data->d_random);
 }
 void *world_prepare_update(const world_t *p)
 {
@@ -192,13 +213,12 @@ void *world_prepare_update(const world_t *p)
 	state_t *d_grid;
 	state_t *d_tmp_grid;
 	uint8_t *d_infection_duration_grid;
-    float *d_random;
+
 
 	checkCudaErrors(cudaMalloc((void **)&d_grid, GRID_SIZE));
 	checkCudaErrors(cudaMalloc((void **)&d_tmp_grid, GRID_SIZE));
 	checkCudaErrors(cudaMalloc((void **)&d_infection_duration_grid,
 				   INFECTION_GRID_SIZE));
-    checkCudaErrors(cudaMalloc((void **)&d_random, world_size * sizeof(float)));
 
 	if (!d_grid) {
 		FatalError("d_grid is null");
@@ -238,9 +258,6 @@ void *world_prepare_update(const world_t *p)
 	cuda_prepare.d_curr_grid = d_grid;
 	cuda_prepare.d_tmp_grid = d_tmp_grid;
 	cuda_prepare.d_infection_duration_grid = d_infection_duration_grid;
-    cuda_prepare.d_random = d_random;
-
-    generate_random_numbers<<<CUDA_NB_BLOCK, CUDA_NB_THREAD>>>(d_random, world_size, 42);
 
     cudaError_t err = cudaDeviceSynchronize();
     if (err != cudaSuccess) {
