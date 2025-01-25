@@ -7,11 +7,7 @@
 #include <stdio.h>
 #include <time.h>
 #include "world.h"
-
-static inline size_t world_world_size(const world_parameters_t *p)
-{
-	return p->worldWidth * p->worldHeight;
-}
+#include "world_priv.h"
 
 static inline bool should_happen(int probability)
 {
@@ -27,11 +23,6 @@ static size_t get_in_state(const world_t *p, state_t state)
 	}
 	return sum;
 }
-static size_t world_initial_population(const world_parameters_t *p)
-{
-	return world_world_size(p) * p->populationPercent / 100;
-}
-
 static uint8_t world_get_nb_infected_neighbours(const world_t *p, size_t i,
 						size_t j)
 {
@@ -58,57 +49,7 @@ static uint8_t world_get_nb_infected_neighbours(const world_t *p, size_t i,
 
 int world_init(world_t *world, const world_parameters_t *p)
 {
-	if (!world) {
-		return -1;
-	}
-	const size_t world_size = world_world_size(p);
-	const size_t people_to_spawn = world_initial_population(p);
-
-	if (!world_size) {
-		return -1;
-	}
-	if (!(people_to_spawn >= p->initialImmune + p->initialInfected)) {
-		return -1;
-	}
-
-	world->grid = (state_t *)malloc(world_size * sizeof(*world->grid));
-
-	world->infectionDurationGrid = (uint8_t *)malloc(
-		world_size * sizeof(*world->infectionDurationGrid));
-
-	if (!world->grid || !world->infectionDurationGrid) {
-		return -1;
-	}
-	memset(world->grid, EMPTY, sizeof(*world->grid) * world_size);
-	memset(world->infectionDurationGrid, p->infectionDuration,
-	       sizeof(*world->infectionDurationGrid) * world_size);
-	memcpy(&world->params, p, sizeof(*p));
-
-	srand(time(NULL));
-
-	size_t people = 0;
-	size_t people_infected = 0;
-	size_t people_immune = 0;
-
-	while (people < people_to_spawn) {
-		const size_t i = rand() % world_size;
-		if (world->grid[i] != EMPTY) {
-			continue;
-		}
-		++people;
-		if (people_infected < p->initialInfected) {
-			world->grid[i] = INFECTED;
-			++people_infected;
-			continue;
-		}
-		if (people_immune < p->initialImmune) {
-			world->grid[i] = IMMUNE;
-			++people_immune;
-			continue;
-		}
-		world->grid[i] = HEALTHY;
-	}
-	return 0;
+	return world_init_common(world, p);
 }
 
 size_t world_get_infected(const world_t *p)
@@ -199,6 +140,5 @@ void world_update(world_t *p, void *raw)
 
 void world_destroy(world_t *w)
 {
-	free(w->grid);
-	free(w->infectionDurationGrid);
+	world_destroy_common(w);
 }
