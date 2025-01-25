@@ -141,7 +141,6 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 	size_t i = blockIdx.y * blockDim.y + threadIdx.y;
 	size_t j = blockIdx.x * blockDim.x + threadIdx.x; 
 	size_t index = i * w->params.worldWidth + j;
-    atomicAdd(&out, 1);
     printf("index: %d\n", index);
     if (i < w->params.worldHeight && j < w->params.worldWidth) {
 
