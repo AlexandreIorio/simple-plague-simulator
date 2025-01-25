@@ -150,7 +150,7 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 		size_t index = i * w->params.worldWidth + j;
 		switch (w->grid[index]) {
 		case HEALTHY:
-			// world_infect_if_should_infect(
+			// world_infect_if_should_infect( 
 			// 	w, result_grid, i, j,
 			// 	w->params.healthyInfectionProbability);
 			break;
@@ -160,7 +160,7 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 			// 	w->params.immuneInfectionProbability);
 			break;
 		case INFECTED:
-			//world_handle_infected(w, result_grid, i, j);
+			world_handle_infected(w, result_grid, i, j);
 			break;
 		case EMPTY:
 		case DEAD:
