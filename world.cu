@@ -96,7 +96,7 @@ bool __device__ world_should_infect(world_t *p, size_t i, size_t j,
 				    int probability)
 {
 	return world_get_nb_infected_neighbours(p, i, j) &&
-	       should_happen(probability, i,j);
+	       should_happen(probability, p->d_random[i * p->params.worldWidth + j]);
 }
 void __device__ world_infect_if_should_infect(world_t *p, state_t *grid,
 					      size_t i, size_t j,
@@ -112,7 +112,7 @@ void __device__ world_handle_infected(world_t *p, state_t *world, size_t i,
 	const size_t index = i * p->params.worldWidth + j;
 
 	if (p->infectionDurationGrid[index] == 0) {
-		if (should_happen(p->params.deathProbability, i ,j)) {
+		if (should_happen(p->params.deathProbability, p->d_random[index])) {
 			world[index] = DEAD;
 		} else {
 			world[index] = IMMUNE;
