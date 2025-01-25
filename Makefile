@@ -2,8 +2,8 @@ CC = gcc
 CXX = g++
 CUDACC = nvcc
 CCFLAGS = -Wall -Wextra -O3
-CXXFLAGS = -Wall -Wextra -O3 -std=c++17 `pkg-config --cflags opencv4`
-CUDAFLAGS = -lcudart
+CXXFLAGS = -Wall -Wextra -O3 -std=c++17
+CUDAFLAGS = --compiler-options '$(CCFLAGS)'
 LDFLAGS = -O3
 TARGET_BASE = plague-simulator-base
 TARGET_CUDA = plague-simulator-cuda
@@ -23,7 +23,7 @@ $(TARGET_BASE): $(BASE_OBJS)
 	$(CXX) $(LDFLAGS) -o $@ $^ 
 
 $(TARGET_CUDA): $(CUDA_OBJS)
-	$(CUDACC) $(LDFLAGS) -o $@ $^ 
+	$(CUDACC) $(CUDAFLAGS) -o $@ $^ 
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -32,7 +32,7 @@ $(TARGET_CUDA): $(CUDA_OBJS)
 	$(CC) $(CCFLAGS) -c $< -o $@ 
 
 %.co: %.cu
-	$(CUDACC) $(CXXFLAGS) -c $< -o $@
+	$(CUDACC) $(CUDAFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(BASE_OBJS) $(CUDA_OBJS) 
