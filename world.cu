@@ -94,7 +94,7 @@ int world_init(world_t *world, const world_parameters_t *p)
 	dim3 grid((p->worldWidth + block.x - 1) / block.x,
 		  (p->worldHeight + block.y - 1) / block.y);
 
-	world_init_random_generator<<<grid, block> > >(d_state, 1337);
+	world_init_random_generator<<<grid, block>>>(d_state, 1337);
 
 	/* No need to synchronize here */
 	world->random_state = d_state;
@@ -174,7 +174,7 @@ void world_update(world_t *p, void *raw)
 	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
 	dim3 grid((p->params.worldWidth + block.x - 1) / block.x,
 		  (p->params.worldHeight + block.y - 1) / block.y);
-	world_update_k<<<grid, block> > >(update_data->d_world,
+	world_update_k<<<grid, block>>>(update_data->d_world,
 					  update_data->d_tmp_grid);
 
 	checkCudaErrors(cudaMemcpy(p->grid, update_data->d_tmp_grid, GRID_SIZE,
