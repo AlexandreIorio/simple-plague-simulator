@@ -195,14 +195,12 @@ void *world_prepare_update(const world_t *p)
 	const size_t world_size = world_world_size(&p->params);
 	state_t *d_grid;
 	state_t *d_tmp_grid;
+	uint8_t *d_infection_duration_grid;
 
 	checkCudaErrors(
 		cudaMalloc((void **)&(d_grid), world_size * sizeof(*d_grid)));
 	checkCudaErrors(cudaMalloc((void **)&(d_tmp_grid),
 				   world_size * sizeof(*d_tmp_grid)));
-
-	uint8_t *d_infection_duration_grid;
-
 	checkCudaErrors(
 		cudaMalloc((void **)&(d_infection_duration_grid),
 			   world_size * sizeof(*d_infection_duration_grid)));
@@ -218,10 +216,10 @@ void *world_prepare_update(const world_t *p)
 	checkCudaErrors(cudaMalloc((void **)&(d_world), sizeof(*d_world)));
 
 	checkCudaErrors(cudaMemcpy(d_grid, p->grid,
-				   world_size * sizeof(*d_grid),
+				   world_size * sizeof(*p->grid),
 				   cudaMemcpyHostToDevice));
 	checkCudaErrors(cudaMemcpy(d_tmp_grid, p->grid,
-				   world_size * sizeof(*d_tmp_grid),
+				   world_size * sizeof(*p->grid),
 				   cudaMemcpyHostToDevice));
 	checkCudaErrors(
 		cudaMemcpy(d_infection_duration_grid, p->infectionDurationGrid,
