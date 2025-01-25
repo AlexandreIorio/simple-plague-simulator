@@ -147,16 +147,19 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 		size_t index = i * w->params.worldWidth + j;
 		switch (w->grid[index]) {
 		case HEALTHY:
+            printf("healthy\n");
 			world_infect_if_should_infect(
 				w, result_grid, i, j,
 				w->params.healthyInfectionProbability);
 			break;
 		case IMMUNE:
+            printf("immune\n");
 			world_infect_if_should_infect(
 				w, result_grid, i, j,
 				w->params.immuneInfectionProbability);
 			break;
 		case INFECTED:
+            printf("infected\n");
 			world_handle_infected(w, result_grid, i, j);
 			break;
 		case EMPTY:
