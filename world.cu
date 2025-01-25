@@ -11,7 +11,7 @@
 #define CUDA_NB_THREAD	 (CUDA_BLOCK_DIM_X * CUDA_BLOCK_DIM_Y)
 #define CUDA_NB_BLOCK	 (CUDA_SM / CUDA_WARP_SIZE)
 
-static __global__ void world_init_random_values(curandState *state,
+static __global__ void world_init_random_generator(curandState *state,
 						uint64_t seed)
 {
 	const size_t i = blockIdx.y * blockDim.y + threadIdx.y;
@@ -72,8 +72,10 @@ int world_init(world_t *world, const world_parameters_t *p)
 	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
 	dim3 grid((p->worldWidth + block.x - 1) / block.x,
 		  (p->worldHeight + block.y - 1) / block.y);
-	/* No need to synchronize here */
 
+	world_init_random_generator<<<grid, block>>>(d_state, 1337);
+
+	/* No need to synchronize here */
 	world->random_state = d_state;
 
 	return 0;
