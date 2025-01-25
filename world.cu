@@ -44,7 +44,7 @@ __device__ float random_float(uint32_t seed) {
     return (wang_hash(seed) & 0xFFFFFF) / (float)0x1000000;
 }
 
-static inline __device__ bool should_happen(int probability)
+static inline __device__ bool should_happen(int probability, int i, int j)
 {
     atomicAdd(&frame, 1);
     uint32_t seed = i * 73856093 ^ j * 19349663 ^ frame * 83492791;
@@ -99,7 +99,7 @@ bool __device__ world_should_infect(world_t *p, size_t i, size_t j,
 				    int probability)
 {
 	return world_get_nb_infected_neighbours(p, i, j) &&
-	       should_happen(probability);
+	       should_happen(probability, i,j);
 }
 void __device__ world_infect_if_should_infect(world_t *p, state_t *grid,
 					      size_t i, size_t j,
@@ -115,7 +115,7 @@ void __device__ world_handle_infected(world_t *p, state_t *world, size_t i,
 	const size_t index = i * p->params.worldWidth + j;
 
 	if (p->infectionDurationGrid[index] == 0) {
-		if (should_happen(p->params.deathProbability)) {
+		if (should_happen(p->params.deathProbability, i ,j)) {
 			world[index] = DEAD;
 		} else {
 			world[index] = IMMUNE;
