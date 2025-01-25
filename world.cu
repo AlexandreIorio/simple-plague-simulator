@@ -12,6 +12,24 @@
 #define CUDA_NB_THREAD	 (CUDA_BLOCK_DIM_X * CUDA_BLOCK_DIM_Y)
 #define CUDA_NB_BLOCK	 (CUDA_SM / CUDA_WARP_SIZE)
 
+#define FatalError(s)                                                          \
+	do {                                                                   \
+		std::cout << std::flush << "ERROR: " << s << " in "            \
+			  << __FILE__ << ':' << __LINE__ << "\nAborting...\n"; \
+		cudaDeviceReset();                                             \
+		exit(-1);                                                      \
+	} while (0)
+
+#define checkCudaErrors(status)                                                \
+	do {                                                                   \
+		std::stringstream _err;                                        \
+		if (status != 0) {                                             \
+			_err << "cuda failure (" << cudaGetErrorString(status) \
+			     << ')';                                           \
+			FatalError(_err.str());                                \
+		}                                                              \
+	} while (0)
+
 static __global__ void world_init_random_generator(curandState *state,
 						   uint64_t seed)
 {
@@ -68,8 +86,9 @@ int world_init(world_t *world, const world_parameters_t *p)
 		return err;
 	}
 	curandState *d_state;
-	cudaMalloc((void **)&d_state,
-		   CUDA_NB_THREAD * CUDA_NB_BLOCK * sizeof(*d_state));
+	checkCudaErrors(
+		cudaMalloc((void **)&d_state,
+			   CUDA_NB_THREAD * CUDA_NB_BLOCK * sizeof(*d_state)));
 	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
 	dim3 grid((p->worldWidth + block.x - 1) / block.x,
 		  (p->worldHeight + block.y - 1) / block.y);
@@ -156,12 +175,14 @@ void world_update(world_t *p, void *raw)
 	world_update_k<<<grid, block>>>(update_data->d_world,
 					  update_data->d_tmp_grid);
 
-	cudaMemcpy(p->grid, update_data->d_tmp_grid,
-		   world_size * sizeof(*p->grid), cudaMemcpyDeviceToHost);
-	cudaMemcpy(p->infectionDurationGrid,
-		   update_data->d_infection_duration_grid,
-		   world_size * sizeof(*p->infectionDurationGrid),
-		   cudaMemcpyDeviceToHost);
+	checkCudaErrors(cudaMemcpy(p->grid, update_data->d_tmp_grid,
+				   world_size * sizeof(*p->grid),
+				   cudaMemcpyDeviceToHost));
+	checkCudaErrors(
+		cudaMemcpy(p->infectionDurationGrid,
+			   update_data->d_infection_duration_grid,
+			   world_size * sizeof(*p->infectionDurationGrid),
+			   cudaMemcpyDeviceToHost));
 
 	cudaFree(update_data->d_tmp_grid);
 	cudaFree(update_data->d_curr_grid);
@@ -171,34 +192,19 @@ void world_update(world_t *p, void *raw)
 void *world_prepare_update(const world_t *p)
 {
 	const size_t world_size = world_world_size(&p->params);
-	int err;
 	state_t *d_grid;
-	err = cudaMalloc((void **)&(d_grid), world_size * sizeof(*d_grid));
-	if (err != cudaSuccess) {
-		printf("Failed to allocate space for d_grid\n");
-		return NULL;
-	}
+	checkCudaErrors(
+		cudaMalloc((void **)&(d_grid), world_size * sizeof(*d_grid)));
 	state_t *d_tmp_grid;
-	err = cudaMalloc((void **)&(d_tmp_grid),
-			 world_size * sizeof(*d_tmp_grid));
-
-	if (err != cudaSuccess) {
-		cudaFree(d_grid);
-		printf("Failed to allocate space for d_tmp_grid\n");
-		return NULL;
-	}
+	checkCudaErrors(cudaMalloc((void **)&(d_tmp_grid),
+				   world_size * sizeof(*d_tmp_grid)));
 
 	uint8_t *d_infection_duration_grid;
 
-	err = cudaMalloc((void **)&(d_infection_duration_grid),
-			 world_size * sizeof(*d_infection_duration_grid));
+	checkCudaErrors(
+		cudaMalloc((void **)&(d_infection_duration_grid),
+			   world_size * sizeof(*d_infection_duration_grid)));
 
-	if (err != cudaSuccess) {
-		cudaFree(d_grid);
-		cudaFree(d_tmp_grid);
-		printf("Failed to allocate space for d_infection_duration_grid\n");
-		return NULL;
-	}
 	world_t world;
 
 	world.grid = d_grid;
@@ -207,25 +213,21 @@ void *world_prepare_update(const world_t *p)
 
 	world_t *d_world;
 
-	err = cudaMalloc((void **)&(d_world), sizeof(*d_world));
+	checkCudaErrors(cudaMalloc((void **)&(d_world), sizeof(*d_world)));
 
-	if (err != cudaSuccess) {
-		cudaFree(d_grid);
-		cudaFree(d_tmp_grid);
-		cudaFree(d_infection_duration_grid);
-		printf("Failed to allocate space for d_world\n");
-		return NULL;
-	}
+	checkCudaErrors(cudaMemcpy(d_tmp_grid, p->grid,
+				   world_size * sizeof(*d_tmp_grid),
+				   cudaMemcpyHostToDevice));
+	checkCudaErrors(cudaMemcpy(d_grid, p->grid,
+				   world_size * sizeof(*d_grid),
+				   cudaMemcpyHostToDevice));
+	checkCudaErrors(
+		cudaMemcpy(d_infection_duration_grid, p->infectionDurationGrid,
+			   world_size * sizeof(*d_infection_duration_grid),
+			   cudaMemcpyHostToDevice));
 
-	cudaMemcpy(d_tmp_grid, p->grid, world_size * sizeof(*d_tmp_grid),
-		   cudaMemcpyHostToDevice);
-	cudaMemcpy(d_grid, p->grid, world_size * sizeof(*d_grid),
-		   cudaMemcpyHostToDevice);
-	cudaMemcpy(d_infection_duration_grid, p->infectionDurationGrid,
-		   world_size * sizeof(*d_infection_duration_grid),
-		   cudaMemcpyHostToDevice);
-
-	cudaMemcpy(d_world, &world, sizeof(world_t), cudaMemcpyHostToDevice);
+	checkCudaErrors(cudaMemcpy(d_world, &world, sizeof(world_t),
+				   cudaMemcpyHostToDevice));
 
 	cuda_prepare.d_world = d_world;
 	cuda_prepare.d_curr_grid = d_grid;
