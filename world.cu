@@ -215,8 +215,8 @@ void *world_prepare_update(const world_t *p)
 		FatalError("d_infection_duration_grid is null");
 	}
 
-	if (!p->grid) {
-		FatalError("p->grid is null");
+	if (!p || !p->grid) {
+		FatalError("p || p->grid is null");
 	}
 	world_t world;
 
