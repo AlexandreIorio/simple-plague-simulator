@@ -189,14 +189,7 @@ void world_update(world_t *p, void *raw)
     }
     printf("bbb\n"); 
 
-    if (!update_data->d_world->grid) {
-        fprintf(stderr, "Error: w->grid is null!\n");
-        return;
-    }
-
     printf("ccc\n");
-    cudaPointerAttributes attr;
-
     printf("bbb\n");
 	world_update_k<<<grid, block>>>(update_data->d_world,
 					  update_data->d_tmp_grid);
