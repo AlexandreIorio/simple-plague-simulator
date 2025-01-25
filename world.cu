@@ -31,23 +31,15 @@ static __device__ int frame = 0;
 		}                                                              \
 	} while (0)
 
-__device__ uint32_t wang_hash(uint32_t seed) {
-    seed = (seed ^ 61) ^ (seed >> 16);
-    seed *= 9;
-    seed = seed ^ (seed >> 4);
-    seed *= 0x27d4eb2d;
-    seed = seed ^ (seed >> 15);
-    return seed;
-}
-
 __device__ float random_float(uint32_t seed) {
-    return (wang_hash(seed) & 0xFFFFFF) / (float)0x1000000;
+    return fabs(sinf(i * 12.9898f + j * 78.233f) * 43758.5453f) - floorf(fabs(sinf(i * 12.9898f + j * 78.233f) * 43758.5453f));
 }
 
 static inline __device__ bool should_happen(int probability, int i, int j)
 {
+    int tmp = frame;
     atomicAdd(&frame, 1);
-    uint32_t seed = i * 73856093 ^ j * 19349663 ^ frame * 83492791;
+    uint32_t seed = i * 73856093 ^ j * 19349663 ^ tmp * 83492791;
     float rand_value = random_float(seed);
     return rand_value < ((double)probability / 100);
 }
