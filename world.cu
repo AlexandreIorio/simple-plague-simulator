@@ -182,6 +182,10 @@ void world_update(world_t *p, void *raw)
     return;
 }
     printf("aaa\n");
+    if (update_data->d_world->grid == NULL) {
+        fprintf(stderr, "Error: w->grid is null!\n");
+        return;
+    }
     cudaPointerAttributes attr;
     cudaPointerGetAttributes(&attr, update_data->d_world->grid);
     if (attr.type != cudaMemoryTypeDevice) {
