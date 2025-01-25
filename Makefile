@@ -12,7 +12,7 @@ SRC_CPP = $(wildcard *.cpp)
 SRC_CU = $(wildcard *.cu)
 SRC_C = $(wildcard *.c)
 
-COMMON_OBJS = world_priv.o timeline.o
+COMMON_OBJS = world_priv.o timeline.o main.o
 
 BASE_OBJS = $(COMMON_OBJS) world.o
 CUDA_OBJS = $(COMMON_OBJS) world.co
