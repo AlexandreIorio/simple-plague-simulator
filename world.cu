@@ -20,7 +20,7 @@ static __global__ void world_init_random_values(curandState *state,
 	curand_init(seed, index, 0, &state[index]);
 }
 
-static inline __device__ bool should_happen(int probability, curandState *state)
+static inline __device__ int should_happen(int probability, curandState *state)
 {
 	float rand_value = curand_uniform(state);
 	return probability < (rand_value % 100);
