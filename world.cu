@@ -136,14 +136,19 @@ void __device__ world_handle_infected(world_t *p, state_t *world, size_t i,
 	}
 }
 
+int out = 0;
+int in = 0;
 static __global__ void world_update_k(world_t *w, state_t *result_grid)
 {
 	size_t i = blockIdx.y * blockDim.y + threadIdx.y;
 	size_t j = blockIdx.x * blockDim.x + threadIdx.x; 
 	size_t index = i * w->params.worldWidth + j;
+    atomicAdd(&out, 1);
     printf("index: %d\n", index);
     if (i < w->params.worldHeight && j < w->params.worldWidth) {
-        printf("coucou index: %d\n", index);
+        atomicAdd(&in, 1);
+
+        printf("coucou index: %d \n", index);
 		size_t index = i * w->params.worldWidth + j;
 		switch (w->grid[index]) {
 		case HEALTHY:
@@ -168,6 +173,7 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 		} 
 		w->grid[index] = result_grid[index];
 	}
+    printf("out: %d, in: %d\n", out, in);
 }
 void world_update(world_t *p, void *raw)
 {
