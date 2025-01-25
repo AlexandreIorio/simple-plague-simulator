@@ -13,34 +13,21 @@ SRC_CPP = $(wildcard *.cpp)
 SRC_CU = $(wildcard *.cu)
 SRC_C = $(wildcard *.c)
 
-COMMON_OBJS = world_priv.o world_common.o timeline.o main.o
-
-BASE_OBJS = $(COMMON_OBJS) world.o
-CUDA_OBJS = cuda_world_priv.o cuda_world_common.o cuda_timeline.o cuda_main.o cuda_cuda_world.o
+OBJS = world.o world_priv.o world_common.o timeline.o main.o
 
 all: $(TARGET_BASE) $(TARGET_CUDA)
 
-$(TARGET_BASE): $(BASE_OBJS)
+$(TARGET_BASE): $(OBJS)
 	$(CXX) $(LDFLAGS) -o $@ $^ 
 
-$(TARGET_CUDA): $(CUDA_OBJS)
-	$(CUDACC) $(CUDAFLAGS) -o $@ $^ 
+$(TARGET_CUDA): 
+	./cuda_build.sh $(TARGET_CUDA)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 %.o: %.c
 	$(CC) $(CCFLAGS) -c $< -o $@ 
-
-cuda%.o: %.c
-	$(CUDACC) $(CUDAFLAGS) -c $< -o $@
-
-cuda%.o: %.cpp
-	$(CUDACC) $(CUDAFLAGS) -c $< -o $@
-
-
-cuda_world.o: world.cu
-	$(CUDACC) $(CUDAFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(BASE_OBJS) $(CUDA_OBJS) $(TARGET_BASE) $(TARGET_CUDA)

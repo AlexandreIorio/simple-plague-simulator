@@ -1,1 +1,3 @@
-nvcc -o simulation main.cpp world.cu timeline.c -I. --compiler-options '-Wall -Wextra -O2' -lcudart
+#!/bin/sh
+
+nvcc -o $1 main.cpp world.cu world_priv.c world_common.c timeline.c -I. --compiler-options '-Wall -Wextra -O2'
