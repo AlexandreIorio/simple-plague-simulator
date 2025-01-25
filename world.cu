@@ -42,8 +42,12 @@ static __global__ void world_init_random_generator(curandState *state,
 
 static inline __device__ bool should_happen(int probability, curandState *state)
 {
-	// double rand_value = curand_uniform(state);
-	// return rand_value < ((double)probability / 100);
+
+    unsigned long long clock_val = clock64();  // Obtenir le temps en cycles GPU
+    return = (clock_val % 1000000) / 1000000.0f;  // Normalisation entre 0 et 1
+
+	double rand_value = curand_uniform(state);
+	return rand_value < ((double)probability / 100);
     return 0;
 }
 
