@@ -67,7 +67,7 @@ int world_init(world_t *world, const world_parameters_t *p)
 	if (err < 0) {
 		return err;
 	}
-	curandState *d_state;
+	curandStateSobol64_t *d_state;
 	cudaMalloc((void **)&d_state,
 		   CUDA_NB_THREAD * CUDA_NB_BLOCK * sizeof(*d_state));
 	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
@@ -87,22 +87,22 @@ bool __device__ world_should_infect(world_t *p, size_t i, size_t j,
 	return world_get_nb_infected_neighbours(p, i, j) &&
 	       should_happen(
 		       probability,
-		       &world->random_state[i * p->params.worldWidth + j]);
+		       &p->random_state[i * p->params.worldWidth + j]);
 }
-void __device__ world_infect_if_should_infect(world_t *p, size_t i,
-					      size_t j, int probability)
+void __device__ world_infect_if_should_infect(world_t *p, state_t* grid,
+					      size_t i, size_t j, int probability)
 {
 	if (world_should_infect(p, i, j, probability)) {
-		world[i * p->params.worldWidth + j] = INFECTED;
+		grid[i * p->params.worldWidth + j] = INFECTED;
 	}
 }
 void __device__ world_handle_infected(world_t *p, state_t *world,
-				      curandState *state, size_t i, size_t j)
+				      curandStateSobol64_t *state, size_t i, size_t j)
 {
 	const size_t index = i * p->params.worldWidth + j;
 
 	if (p->infectionDurationGrid[index] == 0) {
-		if (should_happen(p->params.deathProbability, state, i, j)) {
+		if (should_happen(p->params.deathProbability, &p->random_state[index])) {
 			world[index] = DEAD;
 		} else {
 			world[index] = IMMUNE;
