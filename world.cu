@@ -42,8 +42,9 @@ static __global__ void world_init_random_generator(curandState *state,
 
 static inline __device__ bool should_happen(int probability, curandState *state)
 {
-	double rand_value = curand_uniform(state);
-	return rand_value < ((double)probability / 100);
+	// double rand_value = curand_uniform(state);
+	// return rand_value < ((double)probability / 100);
+    return 0;
 }
 
 static __device__ uint8_t world_get_nb_infected_neighbours(const world_t *p,
@@ -141,6 +142,7 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 	size_t i = blockIdx.y * blockDim.y + threadIdx.y;
 	size_t j = blockIdx.x * blockDim.x + threadIdx.x; 
 	size_t index = i * w->params.worldWidth + j;
+
     printf("index: %d\n", index);
     if (i < w->params.worldHeight && j < w->params.worldWidth) {
 
