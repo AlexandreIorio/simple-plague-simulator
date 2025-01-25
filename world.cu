@@ -172,15 +172,30 @@ void world_update(world_t *p, void *raw)
 	const size_t INFECTION_GRID_SIZE = world_size * sizeof(uint8_t);
 
 	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
-        printf("AAA\n");
 	dim3 grid((p->params.worldWidth + block.x - 1) / block.x,
 		  (p->params.worldHeight + block.y - 1) / block.y);
+
+
+    if (update_data->d_tmp_grid == NULL || update_data->d_curr_grid == NULL ||
+    update_data->d_infection_duration_grid == NULL || update_data->d_world == NULL) {
+    fprintf(stderr, "CUDA allocation error!\n");
+    return;
+}
+
+
+    printf("Grid: (%d, %d), Block: (%d, %d)\n",
+       grid.x, grid.y, block.x, block.y);
+
 	world_update_k<<<grid, block>>>(update_data->d_world,
 					  update_data->d_tmp_grid);
-    printf("BBB\n");
+
+    cudaError_t err = cudaDeviceSynchronize();
+    if (err != cudaSuccess) {
+        fprintf(stderr, "CUDA error: %s\n", cudaGetErrorString(err));
+    }
+
 	checkCudaErrors(cudaMemcpy(p->grid, update_data->d_tmp_grid, GRID_SIZE,
 				   cudaMemcpyDeviceToHost));
-    printf("CCC\n");
 	checkCudaErrors(cudaMemcpy(p->infectionDurationGrid,
 				   update_data->d_infection_duration_grid,
 				   INFECTION_GRID_SIZE,
