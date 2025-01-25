@@ -3,7 +3,7 @@ CXX = g++
 CUDACC = nvcc
 CCFLAGS = -Wall -Wextra -O3
 CXXFLAGS = -Wall -Wextra -O3 -std=c++17
-CUDAFLAGS = --compiler-options '$(CCFLAGS)'
+CUDAFLAGS = --compiler-options '$(CCFLAGS)' -g -G
 LDFLAGS = -O3
 
 TARGET_BASE = plague-simulator-base
