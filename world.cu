@@ -182,10 +182,13 @@ void world_update(world_t *p, void *raw)
     return;
 }
 
-
-    printf("Grid: (%d, %d), Block: (%d, %d)\n",
-       grid.x, grid.y, block.x, block.y);
-
+    cudaPointerAttributes attr;
+    cudaPointerGetAttributes(&attr, update_data->d_world->grid);
+    if (attr.type != cudaMemoryTypeDevice) {
+        fprintf(stderr, "Error: w->grid is not allocated on device!\n");
+        return;
+    }
+    
 	world_update_k<<<grid, block>>>(update_data->d_world,
 					  update_data->d_tmp_grid);
 
