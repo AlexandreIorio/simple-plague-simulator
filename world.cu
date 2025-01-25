@@ -12,7 +12,7 @@
 #define CUDA_NB_BLOCK	 (CUDA_SM / CUDA_WARP_SIZE)
 
 
-static __global__ void world_init_random_values(curandState *state,
+static __global__ void world_init_random_values(curandStateSobol64_t *state,
 						uint64_t seed)
 {
 	const size_t i = blockIdx.y * blockDim.y + threadIdx.y;
@@ -24,7 +24,7 @@ static __global__ void world_init_random_values(curandState *state,
 static inline __device__ bool should_happen(int probability,
 					    curandStateSobol64_t *state)
 {
-	return probability < (curand_uniform(state) % 100);
+	return probability < (curand(state) % 100);
 }
 
 static __device__ uint8_t world_get_nb_infected_neighbours(const world_t *p,
@@ -71,8 +71,8 @@ int world_init(world_t *world, const world_parameters_t *p)
 	cudaMalloc((void **)&d_state,
 		   CUDA_NB_THREAD * CUDA_NB_BLOCK * sizeof(*d_state));
 	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
-	dim3 grid((p->params.worldWidth + blockDim.x - 1) / blockDim.x,
-		  (p->params.worldHeight + blockDim.y - 1) / blockDim.y);
+	dim3 grid((p->worldWidth + blockDim.x - 1) / blockDim.x,
+		  (p->worldHeight + blockDim.y - 1) / blockDim.y);
 	world_init_random_values<<<grid, block>>>(d_state, 1337);
 	/* No need to synchronize here */
 
@@ -96,8 +96,7 @@ void __device__ world_infect_if_should_infect(world_t *p, state_t* grid,
 		grid[i * p->params.worldWidth + j] = INFECTED;
 	}
 }
-void __device__ world_handle_infected(world_t *p, state_t *world,
-				      curandStateSobol64_t *state, size_t i, size_t j)
+void __device__ world_handle_infected(world_t *p, state_t *world, size_t i, size_t j)
 {
 	const size_t index = i * p->params.worldWidth + j;
 
@@ -173,8 +172,8 @@ void *world_prepare_update(const world_t *p)
 		return NULL;
 	}
 	state_t *d_tmp_grid;
-	err = cudaMalloc((void **)&(d_tmp_world),
-			 world_size * sizeof(*d_tmp_world));
+	err = cudaMalloc((void **)&(d_tmp_grid),
+			 world_size * sizeof(*d_tmp_grid));
 
 	if (err != cudaSuccess) {
 		cudaFree(d_grid);
@@ -208,10 +207,10 @@ void *world_prepare_update(const world_t *p)
 		return NULL;
 	}
 
-	cudaMemcpy(d_tmp_grid, p->grid, world_size * sizeof(*d_tmp_grid));
-	cudaMemcpy(d_grid, p->grid, world_size * sizeof(*d_grid));
+	cudaMemcpy(d_tmp_grid, p->grid, world_size * sizeof(*d_tmp_grid), cudaMemcpyHostToDevice);
+	cudaMemcpy(d_grid, p->grid, world_size * sizeof(*d_grid), cudaMemcpyHostToDevice);
 	cudaMemcpy(d_infection_duration_grid, p->infectionDurationGrid,
-		   world_size * sizeof(*d_infection_duration_grid));
+		   world_size * sizeof(*d_infection_duration_grid), cudaMemcpyHostToDevice);
 
 	cudaMemcpy(d_world, &world, sizeof(world_t), cudaMemcpyHostToDevice);
 
