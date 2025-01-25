@@ -136,8 +136,8 @@ void __device__ world_handle_infected(world_t *p, state_t *world, size_t i,
 	}
 }
 
-int out = 0;
-int in = 0;
+static __device__ int out = 0;
+static __device__ int in = 0;
 static __global__ void world_update_k(world_t *w, state_t *result_grid)
 {
 	size_t i = blockIdx.y * blockDim.y + threadIdx.y;
