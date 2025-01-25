@@ -200,7 +200,7 @@ void *world_prepare_update(const world_t *p)
 	uint8_t *d_infection_duration_grid;
 
 	checkCudaErrors(cudaMalloc((void **)&d_grid, GRID_SIZE));
-	checkCudaErrors(cudaMalloc((void **)&d_tmp_grid, GRID_SIZE)));
+	checkCudaErrors(cudaMalloc((void **)&d_tmp_grid, GRID_SIZE));
 	checkCudaErrors(cudaMalloc((void **)&d_infection_duration_grid,
 				   INFECTION_GRID_SIZE));
 
