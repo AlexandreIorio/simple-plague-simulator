@@ -161,6 +161,7 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 		case DEAD:
 			break;
 		}
+        printf("index: %d\n", index);
 		w->grid[index] = result_grid[index];
 	}
 }
