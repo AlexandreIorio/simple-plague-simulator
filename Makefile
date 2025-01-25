@@ -12,10 +12,10 @@ SRC_CPP = $(wildcard *.cpp)
 SRC_CU = $(wildcard *.cu)
 SRC_C = $(wildcard *.c)
 
-COMMON_OBJS = world_priv.o timeline.o main.o
+COMMON_OBJS = world_priv.o world_common.o timeline.o main.o
 
 BASE_OBJS = $(COMMON_OBJS) world.o
-CUDA_OBJS = $(COMMON_OBJS) world.co
+CUDA_OBJS = $(COMMON_OBJS) cuda_world.o
 
 all: $(TARGET_BASE) $(TARGET_CUDA)
 
@@ -31,7 +31,7 @@ $(TARGET_CUDA): $(CUDA_OBJS)
 %.o: %.c
 	$(CC) $(CCFLAGS) -c $< -o $@ 
 
-%.co: %.cu
+cuda_world.o: world.cu
 	$(CUDACC) $(CUDAFLAGS) -c $< -o $@
 
 clean:
