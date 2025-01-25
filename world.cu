@@ -12,7 +12,7 @@
 #define CUDA_NB_BLOCK	 (CUDA_SM / CUDA_WARP_SIZE)
 
 static __global__ void world_init_random_generator(curandState *state,
-						uint64_t seed)
+						   uint64_t seed)
 {
 	const size_t i = blockIdx.y * blockDim.y + threadIdx.y;
 	const size_t j = blockIdx.x * blockDim.x + threadIdx.x;
@@ -174,6 +174,7 @@ void *world_prepare_update(const world_t *p)
 	state_t *d_grid;
 	err = cudaMalloc((void **)&(d_grid), world_size * sizeof(*d_grid));
 	if (err != cudaSuccess) {
+		printf("Failed to allocate space for d_grid\n");
 		return NULL;
 	}
 	state_t *d_tmp_grid;
@@ -182,6 +183,7 @@ void *world_prepare_update(const world_t *p)
 
 	if (err != cudaSuccess) {
 		cudaFree(d_grid);
+		printf("Failed to allocate space for d_tmp_grid\n");
 		return NULL;
 	}
 
@@ -193,6 +195,7 @@ void *world_prepare_update(const world_t *p)
 	if (err != cudaSuccess) {
 		cudaFree(d_grid);
 		cudaFree(d_tmp_grid);
+		printf("Failed to allocate space for d_infection_duration_grid\n");
 		return NULL;
 	}
 	world_t world;
@@ -209,6 +212,7 @@ void *world_prepare_update(const world_t *p)
 		cudaFree(d_grid);
 		cudaFree(d_tmp_grid);
 		cudaFree(d_infection_duration_grid);
+		printf("Failed to allocate space for d_world\n");
 		return NULL;
 	}
 
