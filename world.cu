@@ -158,13 +158,13 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 				w->params.healthyInfectionProbability);
 			break;
 		case IMMUNE:
-            printf("immune\n");
+            printf("immune \n");
 			world_infect_if_should_infect(
 				w, result_grid, i, j,
 				w->params.immuneInfectionProbability);
 			break;
 		case INFECTED:
-            printf("infected in:\n", in);
+            printf("infected in: %d\n", in);
 			world_handle_infected(w, result_grid, i, j);
 			break;
 		case EMPTY:
