@@ -161,9 +161,9 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 		case DEAD:
 			break;
 		}
+		size_t index = i * w->params.worldWidth + j;
+		w->grid[index] = result_grid[index];
 	}
-	size_t index = i * w->params.worldWidth + j;
-	w->grid[index] = result_grid[index];
 }
 void world_update(world_t *p, void *raw)
 {
