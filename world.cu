@@ -154,9 +154,11 @@ void world_update(world_t *p, void *raw)
 	world_update_k<<<grid, block>>>(update_data->d_world,
 					  update_data->d_tmp_grid);
 
-	cudaMemcpy(p->grid, update_data->d_tmp_grid, world_size * sizeof(*p->grid), cudaMemcpyDeviceToHost);
+	cudaMemcpy(p->grid, update_data->d_tmp_grid,
+		   world_size * sizeof(*p->grid), cudaMemcpyDeviceToHost);
 	cudaMemcpy(p->infectionDurationGrid,
 		   update_data->d_infection_duration_grid,
+		   world_size * sizeof(*p->infectionDurationGrid),
 		   cudaMemcpyDeviceToHost);
 
 	cudaFree(update_data->d_tmp_grid);
