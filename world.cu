@@ -136,8 +136,6 @@ void __device__ world_handle_infected(world_t *p, state_t *world, size_t i,
 	}
 }
 
-static __device__ int out = 0;
-static __device__ int in = 0;
 static __global__ void world_update_k(world_t *w, state_t *result_grid)
 {
 	size_t i = blockIdx.y * blockDim.y + threadIdx.y;
@@ -160,13 +158,13 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 				w->params.immuneInfectionProbability);
 			break;
 		case INFECTED:
-			// world_handle_infected(w, result_grid, i, j);
+			world_handle_infected(w, result_grid, i, j);
 			break;
 		case EMPTY:
 		case DEAD:
 			break;
 		} 
-		w->grid[index] = result_grid[index];
+		//w->grid[index] = result_grid[index];
 	}
 }
 void world_update(world_t *p, void *raw)
