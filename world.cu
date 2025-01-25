@@ -22,8 +22,8 @@ static __global__ void world_init_random_values(curandState *state,
 
 static inline __device__ int should_happen(int probability, curandState *state)
 {
-	float rand_value = curand_uniform(state);
-	return probability < (rand_value % 100);
+	double rand_value = curand_uniform(state);
+	return rand_value < ((double)probabilty / 100);
 }
 
 static __device__ uint8_t world_get_nb_infected_neighbours(const world_t *p,
