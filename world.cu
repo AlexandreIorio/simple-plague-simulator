@@ -70,9 +70,8 @@ int world_init(world_t *world, const world_parameters_t *p)
 	cudaMalloc((void **)&d_state,
 		   CUDA_NB_THREAD * CUDA_NB_BLOCK * sizeof(*d_state));
 	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
-	dim3 grid((p->worldWidth + blockDim.x - 1) / blockDim.x,
-		  (p->worldHeight + blockDim.y - 1) / blockDim.y);
-	world_init_random_values<<<grid, block>>>(d_state, 1337);
+	dim3 grid((p->worldWidth + block.x - 1) / block.x,
+		  (p->worldHeight + block.y - 1) / block.y);
 	/* No need to synchronize here */
 
 	world->random_state = d_state;
