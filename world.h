@@ -1,6 +1,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef __CUDACC__
+#include <curand_kernel.h>
+#include <curand.h>
+#endif
+
 #ifndef world_H
 #define world_H
 
@@ -27,9 +32,9 @@ typedef struct {
 	world_parameters_t params;
 	state_t *grid;
 	uint8_t *infectionDurationGrid;
-	#ifdef  __CUDACC__
-	curandState *random_state;
-	#endif
+#ifdef __CUDACC__
+	curandStateSobol64_t *random_state;
+#endif
 } world_t;
 
 ///@brief inits the world passed with the params passed

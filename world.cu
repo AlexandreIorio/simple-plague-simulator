@@ -3,7 +3,7 @@
 #include "world_priv.h"
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
-#include <curand_kernel.h>
+#include <curand.h>
 #define CUDA_SM		 128
 #define CUDA_WARP_SIZE	 32
 #define CUDA_BLOCK_DIM_X 16
@@ -32,9 +32,9 @@ static __global__ void world_init_random_values(curandState *state,
 }
 
 static inline __device__ bool should_happen(int probability,
-					    const curandState *state)
+					    curandStateSobol64_t *state)
 {
-	return probability < (curand_uniform(*state) % 100);
+	return probability < (curand_uniform(state) % 100);
 }
 
 static __device__ uint8_t world_get_nb_infected_neighbours(const world_t *p,
@@ -90,7 +90,7 @@ int world_init(world_t *world, const world_parameters_t *p)
 	return 0;
 }
 
-bool __device__ world_should_infect(const world_t *p, size_t i, size_t j,
+bool __device__ world_should_infect(world_t *p, size_t i, size_t j,
 				    int probability)
 {
 	return world_get_nb_infected_neighbours(p, i, j) &&
@@ -98,7 +98,7 @@ bool __device__ world_should_infect(const world_t *p, size_t i, size_t j,
 		       probability,
 		       &world->random_state[i * p->params.worldWidth + j]);
 }
-void __device__ world_infect_if_should_infect(const world_t *p, state_t *world,
+void __device__ world_infect_if_should_infect(world_t *p, state_t *world,
 					      size_t i, size_t j,
 					      int probability)
 {
@@ -112,8 +112,7 @@ void __device__ world_handle_infected(world_t *p, state_t *world,
 	const size_t index = i * p->params.worldWidth + j;
 
 	if (p->infectionDurationGrid[index] == 0) {
-		if (should_happen(p->params.deathProbability, state, i,
-				       j)) {
+		if (should_happen(p->params.deathProbability, state, i, j)) {
 			world[index] = DEAD;
 		} else {
 			world[index] = IMMUNE;
@@ -160,7 +159,8 @@ void world_update(world_t *p, void *raw)
 
 	dim3 grid, block;
 	world_kernel_dimensions(world, &grid, &block);
-	world_update_k<<<grid, block>>>(update_data->d_world, update_data->d_tmp_grid);
+	world_update_k<<<grid, block>>>(update_data->d_world,
+					  update_data->d_tmp_grid);
 
 	cudaMempcy(p->grid, update_data->d_tmp_grid, cudaMemcpyDeviceToHost);
 	cudaMempcy(p->infectionDurationGrid,
