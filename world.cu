@@ -226,7 +226,7 @@ void *world_prepare_update(const world_t *p)
 
 	world_t *d_world;
 
-	std::cout << "World size is " << world_size << std::endl;
+	std::cout << "grid 0 is " << p->grid[0] << std::endl;
 	checkCudaErrors(cudaMalloc((void **)&(d_world), sizeof(*d_world)));
 
 	checkCudaErrors(cudaMemcpy(d_grid, p->grid,
