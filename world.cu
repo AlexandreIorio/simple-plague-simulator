@@ -29,7 +29,7 @@
 		}                                                              \
 	} while (0)
 
-__global__ void init_random_numbers(unsigned long seed, world_t *world) {
+__global__ void init_random_numbers(world_t *world) {
     size_t i = blockIdx.y * blockDim.y + threadIdx.y;
 	size_t j = blockIdx.x * blockDim.x + threadIdx.x; 
     const size_t index = i * world->params.worldWidth + j;
@@ -136,7 +136,7 @@ void __device__ world_handle_infected(world_t *p, state_t *world, size_t i,
 	const size_t index = i * p->params.worldWidth + j;
 
 	if (p->infectionDurationGrid[index] == 0) {
-		if (should_happen(p->params.deathProbability, p->d_random[index])) {
+		if (should_happen(p->params.deathProbability, p->dRandom[index])) {
 			world[index] = DEAD;
 		} else {
 			world[index] = IMMUNE;
@@ -187,7 +187,7 @@ void world_update(world_t *p, void *raw)
 	dim3 grid((p->params.worldWidth + block.x - 1) / block.x,
 		  (p->params.worldHeight + block.y - 1) / block.y);
 
-    generate_random_numbers<<<grid, block>>>(update_data->d_random, update_data->d_world);
+    generate_random_numbers<<<grid, block>>>(update_data->d_world);
 
     checkCudaErrors(cudaDeviceSynchronize()); 
 
