@@ -140,7 +140,7 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 {
 	size_t i = blockIdx.y * blockDim.y + threadIdx.y;
 	size_t j = blockIdx.x * blockDim.x + threadIdx.x;
-
+    printf("i: %d, j: %d\n", i, j);
 	if (i < w->params.worldHeight && j < w->params.worldWidth) {
 		size_t index = i * w->params.worldWidth + j;
 		switch (w->grid[index]) {
@@ -175,22 +175,7 @@ void world_update(world_t *p, void *raw)
 	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
 	dim3 grid((p->params.worldWidth + block.x - 1) / block.x,
 		  (p->params.worldHeight + block.y - 1) / block.y);
-
-
-    if (update_data->d_tmp_grid == NULL || update_data->d_curr_grid == NULL ||
-    update_data->d_infection_duration_grid == NULL || update_data->d_world == NULL) {
-    fprintf(stderr, "CUDA allocation error!\n");
-    return;
-}
-    printf("aaa\n");
-    if (!update_data->d_world ) {
-        fprintf(stderr, "Error: w->d_world is null!\n");
-        return;
-    }
-    printf("bbb\n"); 
-
-    printf("ccc\n");
-    printf("bbb\n");
+  
 	world_update_k<<<grid, block>>>(update_data->d_world,
 					  update_data->d_tmp_grid);
 
