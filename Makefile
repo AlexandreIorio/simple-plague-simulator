@@ -1,22 +1,29 @@
 CC = gcc
 CXX = g++
+CUDACC = nvcc
 CCFLAGS = -Wall -Wextra -O3
 CXXFLAGS = -Wall -Wextra -O3 -std=c++17 `pkg-config --cflags opencv4`
-LDFLAGS = -O3 `pkg-config --libs opencv4`
-TARGET = plague-simulator
+CUDAFLAGS = -lcudart
+LDFLAGS = -O3
+TARGET_BASE = plague-simulator-base
+TARGET_CUDA = plague-simulator-cuda
 
 SRC_CPP = $(wildcard *.cpp)
 SRC_CU = $(wildcard *.cu)
 SRC_C = $(wildcard *.c)
-OBJ_CPP = $(SRC_CPP:.cpp=.o)
-OBJ_CU = $(SRC_CU:.cu=.o)
-OBJ_C = $(SRC_C:.c=.o)
-OBJ = $(OBJ_CPP) $(OBJ_C) 
 
-all: $(TARGET)
+COMMON_OBJS = world_priv.o timeline.o
 
-$(TARGET): $(OBJ)
-	$(CXX) $(OBJ) -o $@ $(LDFLAGS)
+BASE_OBJS = $(COMMON_OBJS) world.o
+CUDA_OBJS = $(COMMON_OBJS) world.co
+
+all: $(TARGET_BASE) $(TARGET_CUDA)
+
+$(TARGET_BASE): $(BASE_OBJS)
+	$(CXX) $(LDFLAGS) -o $@ $^ 
+
+$(TARGET_CUDA): $(CUDA_OBJS)
+	$(CUDACC) $(LDFLAGS) -o $@ $^ 
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -24,8 +31,8 @@ $(TARGET): $(OBJ)
 %.o: %.c
 	$(CC) $(CCFLAGS) -c $< -o $@ 
 
-%.o: %.cu
-	$(CXX) $(CXXFLAGS) -x c++ -c $< -o $@
+%.co: %.cu
+	$(CUDACC) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJ) $(TARGET)
+	rm -f $(BASE_OBJS) $(CUDA_OBJS) 
