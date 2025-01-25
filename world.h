@@ -33,7 +33,7 @@ typedef struct {
 	state_t *grid;
 	uint8_t *infectionDurationGrid;
 #ifdef __CUDACC__
-	curandStateSobol64_t *random_state;
+	curandState *random_state;
 #endif
 } world_t;
 
