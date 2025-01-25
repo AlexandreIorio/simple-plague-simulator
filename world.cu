@@ -1,6 +1,7 @@
 #ifdef __CUDACC__
 
 #include <iostream>
+#include <sstream>
 #include "world_priv.h"
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
