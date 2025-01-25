@@ -176,15 +176,15 @@ void world_update(world_t *p, void *raw)
 		  (p->params.worldHeight + block.y - 1) / block.y);
 	world_update_k<<<grid, block>>>(update_data->d_world,
 					  update_data->d_tmp_grid);
-
+    printf("AAA\n");
 	checkCudaErrors(cudaMemcpy(p->grid, update_data->d_tmp_grid, GRID_SIZE,
 				   cudaMemcpyDeviceToHost));
-
+    printf("BBB\n");
 	checkCudaErrors(cudaMemcpy(p->infectionDurationGrid,
 				   update_data->d_infection_duration_grid,
 				   INFECTION_GRID_SIZE,
 				   cudaMemcpyDeviceToHost));
-
+    printf("CCC\n");
 	cudaFree(update_data->d_tmp_grid);
 	cudaFree(update_data->d_curr_grid);
 	cudaFree(update_data->d_infection_duration_grid);
