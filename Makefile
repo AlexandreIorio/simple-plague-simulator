@@ -5,6 +5,7 @@ CCFLAGS = -Wall -Wextra -O3
 CXXFLAGS = -Wall -Wextra -O3 -std=c++17
 CUDAFLAGS = --compiler-options '$(CCFLAGS)'
 LDFLAGS = -O3
+
 TARGET_BASE = plague-simulator-base
 TARGET_CUDA = plague-simulator-cuda
 
@@ -35,4 +36,4 @@ cuda_world.o: world.cu
 	$(CUDACC) $(CUDAFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(BASE_OBJS) $(CUDA_OBJS) 
+	rm -f $(BASE_OBJS) $(CUDA_OBJS) $(TARGET_BASE) $(TARGET_CUDA)
