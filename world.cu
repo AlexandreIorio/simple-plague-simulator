@@ -169,6 +169,8 @@ void world_update(world_t *p, void *raw)
 {
 	cuda_prepare_update_t *update_data = (cuda_prepare_update_t *)raw;
 	const size_t world_size = world_world_size(&p->params);
+	const size_t GRID_SIZE = world_size * sizeof(state_t);
+	const size_t INFECTION_GRID_SIZE = world_size * sizeof(uint8_t);
 
 	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
 	dim3 grid((p->params.worldWidth + block.x - 1) / block.x,
@@ -176,14 +178,13 @@ void world_update(world_t *p, void *raw)
 	world_update_k<<<grid, block>>>(update_data->d_world,
 					  update_data->d_tmp_grid);
 
-	checkCudaErrors(cudaMemcpy(p->grid, update_data->d_tmp_grid,
-				   world_size * sizeof(*p->grid),
+	checkCudaErrors(cudaMemcpy(p->grid, update_data->d_tmp_grid, GRID_SIZE,
 				   cudaMemcpyDeviceToHost));
-	checkCudaErrors(
-		cudaMemcpy(p->infectionDurationGrid,
-			   update_data->d_infection_duration_grid,
-			   world_size * sizeof(*p->infectionDurationGrid),
-			   cudaMemcpyDeviceToHost));
+
+	checkCudaErrors(cudaMemcpy(p->infectionDurationGrid,
+				   update_data->d_infection_duration_grid,
+				   INFECTION_GRID_SIZE,
+				   cudaMemcpyDeviceToHost));
 
 	cudaFree(update_data->d_tmp_grid);
 	cudaFree(update_data->d_curr_grid);
@@ -193,17 +194,16 @@ void world_update(world_t *p, void *raw)
 void *world_prepare_update(const world_t *p)
 {
 	const size_t world_size = world_world_size(&p->params);
+	const size_t GRID_SIZE = world_size * sizeof(state_t);
+	const size_t INFECTION_GRID_SIZE = world_size * sizeof(uint8_t);
 	state_t *d_grid;
 	state_t *d_tmp_grid;
 	uint8_t *d_infection_duration_grid;
 
-	checkCudaErrors(
-		cudaMalloc((void **)&(d_grid), world_size * sizeof(*d_grid)));
-	checkCudaErrors(cudaMalloc((void **)&(d_tmp_grid),
-				   world_size * sizeof(*d_tmp_grid)));
-	checkCudaErrors(
-		cudaMalloc((void **)&(d_infection_duration_grid),
-			   world_size * sizeof(*d_infection_duration_grid)));
+	checkCudaErrors(cudaMalloc((void **)&d_grid, GRID_SIZE));
+	checkCudaErrors(cudaMalloc((void **)&d_tmp_grid, GRID_SIZE)));
+	checkCudaErrors(cudaMalloc((void **)&d_infection_duration_grid,
+				   INFECTION_GRID_SIZE));
 
 	if (!d_grid) {
 		FatalError("d_grid is null");
@@ -226,19 +226,15 @@ void *world_prepare_update(const world_t *p)
 
 	world_t *d_world;
 
-	std::cout << "grid 0 is " << p->grid[0] << std::endl;
-	checkCudaErrors(cudaMalloc((void **)&(d_world), sizeof(*d_world)));
+	checkCudaErrors(cudaMalloc((void **)&d_world, sizeof(world_t)));
 
-	checkCudaErrors(cudaMemcpy(d_grid, p->grid,
-				   world_size * sizeof(*p->grid),
-				   cudaMemcpyHostToDevice));
-	checkCudaErrors(cudaMemcpy(d_tmp_grid, p->grid,
-				   world_size * sizeof(*p->grid),
+	checkCudaErrors(
+		cudaMemcpy(d_grid, p->grid, GRID_SIZE, cudaMemcpyHostToDevice));
+	checkCudaErrors(cudaMemcpy(d_tmp_grid, p->grid, GRID_SIZE,
 				   cudaMemcpyHostToDevice));
 	checkCudaErrors(
 		cudaMemcpy(d_infection_duration_grid, p->infectionDurationGrid,
-			   world_size * sizeof(*d_infection_duration_grid),
-			   cudaMemcpyHostToDevice));
+			   INFECTION_GRID_SIZE, cudaMemcpyHostToDevice));
 
 	checkCudaErrors(cudaMemcpy(d_world, &world, sizeof(world_t),
 				   cudaMemcpyHostToDevice));
