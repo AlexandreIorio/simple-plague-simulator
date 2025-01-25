@@ -22,7 +22,8 @@ static __global__ void world_init_random_values(curandState *state,
 
 static inline __device__ bool should_happen(int probability, curandState *state)
 {
-	return probability < (curand_uniform(state) % 100);
+	float rand_value = curand_uniform(state);
+	return probability < (rand_value % 100);
 }
 
 static __device__ uint8_t world_get_nb_infected_neighbours(const world_t *p,
@@ -132,7 +133,7 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 				w->params.immuneInfectionProbability);
 			break;
 		case INFECTED:
-			world_handle_infected(w, result_grid, state, i, j);
+			world_handle_infected(w, result_grid, i, j);
 			break;
 		case EMPTY:
 		case DEAD:
@@ -145,6 +146,7 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 void world_update(world_t *p, void *raw)
 {
 	cuda_prepare_update_t *update_data = (cuda_prepare_update_t *)raw;
+	const size_t world_size = world_world_size(&p->params);
 
 	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
 	dim3 grid((p->params.worldWidth + blockDim.x - 1) / blockDim.x,
@@ -152,7 +154,7 @@ void world_update(world_t *p, void *raw)
 	world_update_k<<<grid, block>>>(update_data->d_world,
 					  update_data->d_tmp_grid);
 
-	cudaMemcpy(p->grid, update_data->d_tmp_grid, cudaMemcpyDeviceToHost);
+	cudaMemcpy(p->grid, update_data->d_tmp_grid, world_size * sizeof(*p->grid), cudaMemcpyDeviceToHost);
 	cudaMemcpy(p->infectionDurationGrid,
 		   update_data->d_infection_duration_grid,
 		   cudaMemcpyDeviceToHost);
