@@ -164,7 +164,7 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 				w->params.immuneInfectionProbability);
 			break;
 		case INFECTED:
-            printf("infected\n");
+            printf("infected in:\n", in);
 			world_handle_infected(w, result_grid, i, j);
 			break;
 		case EMPTY:
