@@ -143,7 +143,7 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 	size_t index = i * w->params.worldWidth + j;
     printf("index: %d\n", index);
     if (i < w->params.worldHeight && j < w->params.worldWidth) {
-        printf("coucou\n");
+        printf("coucou index: %d\n", index);
 		size_t index = i * w->params.worldWidth + j;
 		switch (w->grid[index]) {
 		case HEALTHY:
@@ -162,7 +162,7 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 		case EMPTY:
 		case DEAD:
 			break;
-		}
+		} 
 		w->grid[index] = result_grid[index];
 	}
 }
