@@ -180,7 +180,7 @@ void world_update(world_t *p, void *raw)
     printf("BBB\n");
 	checkCudaErrors(cudaMemcpy(p->grid, update_data->d_tmp_grid, GRID_SIZE,
 				   cudaMemcpyDeviceToHost));
-
+    printf("CCC\n");
 	checkCudaErrors(cudaMemcpy(p->infectionDurationGrid,
 				   update_data->d_infection_duration_grid,
 				   INFECTION_GRID_SIZE,
