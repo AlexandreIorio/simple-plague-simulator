@@ -4,14 +4,14 @@
 #include <sstream>
 #include "world_priv.h"
 #include <cuda_runtime.h>
-#include <curand_kernel.h>
-#include <curand.h>
 #define CUDA_SM 128
 #define CUDA_WARP_SIZE 32
 #define CUDA_BLOCK_DIM_X 16
 #define CUDA_BLOCK_DIM_Y 16
 #define CUDA_NB_THREAD (CUDA_BLOCK_DIM_X * CUDA_BLOCK_DIM_Y)
 #define CUDA_NB_BLOCK (CUDA_SM / CUDA_WARP_SIZE)
+
+static __device__ int frame = 0;
 
 #define FatalError(s)                                                          \
 	do {                                                                   \
@@ -31,23 +31,25 @@
 		}                                                              \
 	} while (0)
 
-static __global__ void world_init_random_generator(curandState *state,
-						   uint64_t seed)
-{
-	const size_t i = blockIdx.y * blockDim.y + threadIdx.y;
-	const size_t j = blockIdx.x * blockDim.x + threadIdx.x;
-	const size_t index = i * gridDim.x * blockDim.x + j;
-	curand_init(seed, index, 0, &state[index]);
+__device__ uint32_t wang_hash(uint32_t seed) {
+    seed = (seed ^ 61) ^ (seed >> 16);
+    seed *= 9;
+    seed = seed ^ (seed >> 4);
+    seed *= 0x27d4eb2d;
+    seed = seed ^ (seed >> 15);
+    return seed;
 }
 
-static inline __device__ bool should_happen(int probability, curandState *state)
+__device__ float random_float(uint32_t seed) {
+    return (wang_hash(seed) & 0xFFFFFF) / (float)0x1000000;
+}
+
+static inline __device__ bool should_happen(int probability)
 {
-
-return true;
-
-	// double rand_value = curand_uniform(state);
-	// return rand_value < ((double)probability / 100);
-    // return 0;
+    atomicAdd(&frame, 1);
+    uint32_t seed = i * 73856093 ^ j * 19349663 ^ frame * 83492791;
+    float rand_value = random_float(seed);
+    return rand_value < ((double)probability / 100);
 }
 
 static __device__ uint8_t world_get_nb_infected_neighbours(const world_t *p,
@@ -90,19 +92,6 @@ int world_init(world_t *world, const world_parameters_t *p)
 	if (err < 0) {
 		return err;
 	}
-	curandState *d_state;
-	checkCudaErrors(
-		cudaMalloc((void **)&d_state,
-			   CUDA_NB_THREAD * CUDA_NB_BLOCK * sizeof(*d_state)));
-	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
-	dim3 grid((p->worldWidth + block.x - 1) / block.x,
-		  (p->worldHeight + block.y - 1) / block.y);
-
-	world_init_random_generator<<<grid, block>>>(d_state, 1337);
-
-	/* No need to synchronize here */
-	world->random_state = d_state;
-
 	return 0;
 }
 
@@ -110,8 +99,7 @@ bool __device__ world_should_infect(world_t *p, size_t i, size_t j,
 				    int probability)
 {
 	return world_get_nb_infected_neighbours(p, i, j) &&
-	       should_happen(probability,
-			     &p->random_state[i * p->params.worldWidth + j]);
+	       should_happen(probability);
 }
 void __device__ world_infect_if_should_infect(world_t *p, state_t *grid,
 					      size_t i, size_t j,
@@ -127,8 +115,7 @@ void __device__ world_handle_infected(world_t *p, state_t *world, size_t i,
 	const size_t index = i * p->params.worldWidth + j;
 
 	if (p->infectionDurationGrid[index] == 0) {
-		if (should_happen(p->params.deathProbability,
-				  &p->random_state[index])) {
+		if (should_happen(p->params.deathProbability)) {
 			world[index] = DEAD;
 		} else {
 			world[index] = IMMUNE;
@@ -260,7 +247,6 @@ void *world_prepare_update(const world_t *p)
 
 void world_destroy(world_t *w)
 {
-	cudaFree(w->random_state);
 	world_destroy_common(w);
 }
 
