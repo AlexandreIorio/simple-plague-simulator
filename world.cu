@@ -146,26 +146,21 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
     atomicAdd(&out, 1);
     printf("index: %d\n", index);
     if (i < w->params.worldHeight && j < w->params.worldWidth) {
-        atomicAdd(&in, 1);
 
-        printf("coucou index: %d \n", index);
 		size_t index = i * w->params.worldWidth + j;
 		switch (w->grid[index]) {
 		case HEALTHY:
-            printf("healthy in: %d\n", in);
 			world_infect_if_should_infect(
 				w, result_grid, i, j,
 				w->params.healthyInfectionProbability);
 			break;
 		case IMMUNE:
-            printf("immune \n");
 			world_infect_if_should_infect(
 				w, result_grid, i, j,
 				w->params.immuneInfectionProbability);
 			break;
 		case INFECTED:
-            printf("infected in: %d\n", in);
-			world_handle_infected(w, result_grid, i, j);
+			//world_handle_infected(w, result_grid, i, j);
 			break;
 		case EMPTY:
 		case DEAD:
@@ -173,7 +168,6 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 		} 
 		w->grid[index] = result_grid[index];
 	}
-    printf("out: %d, in: %d\n", out, in);
 }
 void world_update(world_t *p, void *raw)
 {
