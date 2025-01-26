@@ -31,13 +31,18 @@
 		}                                                              \
 	} while (0)
 
-static __global__ void world_init_random_generator(curandState *state,
+static __global__ void world_init_random_generator(world_t *world,
 						   uint64_t seed)
 {
+
+    printf("worldHeight: %d\n", world->d_params.worldHeight);
+    printf("worldWidth: %d\n", world->d_params.worldWidth);
+ 
+    return;
 	const size_t i = blockIdx.y * blockDim.y + threadIdx.y;
 	const size_t j = blockIdx.x * blockDim.x + threadIdx.x;
 	const size_t index = i * gridDim.x * blockDim.x + j;
-	curand_init(seed, index, 0, &state[index]);
+	curand_init(seed, index, 0, &world->state[index]);
 }
 
 static inline __device__ bool should_happen(int probability, curandState *state)
@@ -86,18 +91,46 @@ int world_init(world_t *world, const world_parameters_t *p)
 	if (err < 0) {
 		return err;
 	}
+
 	curandState *d_state;
+    world_parameters_t *d_params;
+
 	checkCudaErrors(
 		cudaMalloc((void **)&d_state,
 			   CUDA_NB_THREAD * CUDA_NB_BLOCK * sizeof(*d_state)));
+
+    checkCudaErrors(
+		cudaMalloc((void **)&d_params,
+			   CUDA_NB_THREAD * CUDA_NB_BLOCK * sizeof(*d_params)));
+
+    checkCudaErrors(
+        cudaMemcpy(d_params, p, sizeof(*p), cudaMemcpyHostToDevice));
+
+
+    cudaError_t cuda_err = cudaGetLastError();
+    if (cuda_err != cudaSuccess) {
+        printf("Error on allocation: %s" cudaGetErrorString(cuda_err));
+        return -1;
+    }
+
+    if (!d_state) {
+        printf("d_state is null");
+        return -1;
+    }
+
+    if (!d_params) {
+        printf("d_params is null");
+        return -1;
+    }
+
+    world->random_state = d_state;
+    world->d_params = d_params;
+
 	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
 	dim3 grid((p->worldWidth + block.x - 1) / block.x,
 		  (p->worldHeight + block.y - 1) / block.y);
 
-	world_init_random_generator<<<grid, block>>>(d_state, 1337);
-
-	/* No need to synchronize here */
-	world->random_state = d_state;
+	world_init_random_generator<<<grid, block>>>(world, 1337);
 
 	return 0;
 }

@@ -34,6 +34,7 @@ typedef struct {
 	uint8_t *infectionDurationGrid;
 #ifdef __CUDACC__
 	curandState *random_state;
+    world_parameters_t *d_params;
 #endif
 } world_t;
 
