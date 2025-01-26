@@ -42,7 +42,7 @@ static __global__ void world_init_random_generator(world_t *world,
 	const size_t i = blockIdx.y * blockDim.y + threadIdx.y;
 	const size_t j = blockIdx.x * blockDim.x + threadIdx.x;
 	const size_t index = i * gridDim.x * blockDim.x + j;
-	curand_init(seed, index, 0, &world->state[index]);
+	curand_init(seed, index, 0, &world->random_state[index]);
 }
 
 static inline __device__ bool should_happen(int probability, curandState *state)
