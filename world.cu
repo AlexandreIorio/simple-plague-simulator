@@ -87,6 +87,7 @@ static cuda_prepare_update_t cuda_prepare;
 
 int world_init(world_t *world, const world_parameters_t *p)
 {
+    printf("Init world\n");
 	int err = world_init_common(world, p);
 	if (err < 0) {
 		return err;
@@ -94,15 +95,16 @@ int world_init(world_t *world, const world_parameters_t *p)
 
 	curandState *d_state;
     world_parameters_t *d_params;
-
+    printf("AAA\n");
 	checkCudaErrors(
 		cudaMalloc((void **)&d_state,
 			   CUDA_NB_THREAD * CUDA_NB_BLOCK * sizeof(*d_state)));
 
+    printf("BBB\n");
     checkCudaErrors(
 		cudaMalloc((void **)&d_params,
 			   CUDA_NB_THREAD * CUDA_NB_BLOCK * sizeof(*d_params)));
-
+    printf("CCC\n");
     checkCudaErrors(
         cudaMemcpy(d_params, p, sizeof(*p), cudaMemcpyHostToDevice));
 
