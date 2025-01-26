@@ -1,6 +1,7 @@
 
 #include "world_priv.h"
 #include <time.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -11,6 +12,7 @@ static size_t world_initial_population(const world_parameters_t *p)
 
 size_t world_world_size(const world_parameters_t *p)
 {
+	printf("Called World Size %zu %zu\n", p->worldWidth, p->worldHeight);
 	return p->worldWidth * p->worldHeight;
 }
 

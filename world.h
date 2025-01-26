@@ -9,9 +9,9 @@
 #ifndef world_H
 #define world_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+/*#ifdef __cplusplus*/
+/*extern "C" {*/
+/*#endif*/
 
 typedef enum { EMPTY = 0, HEALTHY, INFECTED, DEAD, IMMUNE } state_t;
 
@@ -85,8 +85,8 @@ void world_update(world_t *w, void *tmp);
 ///@param the world
 void world_destroy(world_t *w);
 
-#ifdef __cplusplus
-}
-#endif
+/*#ifdef __cplusplus*/
+/*}*/
+/*#endif*/
 
 #endif // world_H
