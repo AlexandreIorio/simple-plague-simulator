@@ -80,9 +80,14 @@ int world_init_common(world_t *world, const world_parameters_t *p)
 	size_t people = 0;
 	size_t people_infected = 0;
 	size_t people_immune = 0;
-	
+
 	while (people < people_to_spawn) {
+#ifdef _OPENMP
 		const size_t i = start_index + (rand() % chunk_per_thread);
+#else
+		const size_t i = rand() % world_size;
+
+#endif
 		if (world->grid[i] != EMPTY) {
 			continue;
 		}
