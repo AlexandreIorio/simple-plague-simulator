@@ -35,8 +35,8 @@ static __global__ void world_init_random_generator(world_t *world,
 						   uint64_t seed)
 {
 
-    printf("worldHeight: %d\n", world->d_params.worldHeight);
-    printf("worldWidth: %d\n", world->d_params.worldWidth);
+    printf("worldHeight: %d\n", world->d_params->worldHeight);
+    printf("worldWidth: %d\n", world->d_params->worldWidth);
  
     return;
 	const size_t i = blockIdx.y * blockDim.y + threadIdx.y;
