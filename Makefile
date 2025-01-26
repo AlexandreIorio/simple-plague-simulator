@@ -30,4 +30,4 @@ $(TARGET_CUDA):
 	$(CC) $(CCFLAGS) -c $< -o $@ 
 
 clean:
-	rm -f $(BASE_OBJS) $(CUDA_OBJS) $(TARGET_BASE) $(TARGET_CUDA)
+	rm -f $(OBJS) $(TARGET_BASE) $(TARGET_CUDA)
