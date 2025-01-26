@@ -6,3 +6,5 @@ plague-simulator
 compile_commands.json
 *.bin
 .vscode/settings.json
+plague-simulator-base
+plague-simulator-cuda
