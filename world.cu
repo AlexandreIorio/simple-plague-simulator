@@ -34,7 +34,7 @@
 static __global__ void world_init_random_generator(world_t *world,
 						   uint64_t seed)
 {
-
+    printf("Init random generator\n");
     printf("worldHeight: %d\n", world->d_params->worldHeight);
     printf("worldWidth: %d\n", world->d_params->worldWidth);
  
