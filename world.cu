@@ -95,8 +95,8 @@ int world_init(world_t *world, const world_parameters_t *p)
 		  (p->worldHeight + block.y - 1) / block.y);
 
 	world_init_random_generator<<<grid, block>>>(d_state, 1337);
+	cudaDeviceSynchronize();
 
-	/* No need to synchronize here */
 	world->random_state = d_state;
 
 	return 0;
