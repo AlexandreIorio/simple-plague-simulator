@@ -1,3 +1,3 @@
 #!/bin/sh
 
-nvcc -o $1 main.cpp world.cu world_priv.cpp world_common.cpp timeline.cpp -I. --compiler-options '-Wall -Wextra -O2'
+nvcc -o $1 main.cpp world.cu world_priv.c world_common.c timeline.c -I. --compiler-options '-O2'
