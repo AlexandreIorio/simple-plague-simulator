@@ -31,13 +31,15 @@
 		}                                                              \
 	} while (0)
 
-static __global__ void world_init_random_generator(curandState *state,
+static __global__ void world_init_random_generator(curandState *state, size_t len,
 						   uint64_t seed)
 {
 	const size_t i = blockIdx.y * blockDim.y + threadIdx.y;
 	const size_t j = blockIdx.x * blockDim.x + threadIdx.x;
 	const size_t index = i * gridDim.x * blockDim.x + j;
-	curand_init(seed, index, 0, &state[index]);
+	if(index < len){
+		curand_init(seed, index, 0, &state[index]);
+	}
 }
 
 static inline __device__ bool should_happen(int probability, curandState *state)
@@ -87,30 +89,17 @@ int world_init(world_t *world, const world_parameters_t *p)
 		return err;
 	}
 	curandState *d_state;
-	checkCudaErrors(
-		cudaMalloc((void **)&d_state,
-			   CUDA_NB_THREAD * CUDA_NB_BLOCK * sizeof(*d_state)));
+	const size_t world_size = world_world_size(p);
 	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
 	dim3 grid((p->worldWidth + block.x - 1) / block.x,
 		  (p->worldHeight + block.y - 1) / block.y);
+	checkCudaErrors(
+		cudaMalloc((void **)&d_state, world_size * sizeof(*d_state)));
 
-	world_init_random_generator<<<grid, block>>>(d_state, 1337);
-	cudaDeviceSynchronize();
+	world_init_random_generator<<<grid, block>>>(d_state, world_size, 1337);
+	checkCudaErrors(cudaDeviceSynchronize());
 
-	world->random_state = d_state;
-	world->worldHeight = p->worldHeight;
-	world->worldWidth = p->worldWidth;
-	world->populationPercent = p->populationPercent;
-	world->initialInfected = p->initialInfected;
-	world->initialImmune = p->initialImmune;
-	world->deathProbability = p->deathProbability;
-	world->infectionDuration = p->infectionDuration;
-	world->healthyInfectionProbability = p->healthyInfectionProbability;
-	world->immuneInfectionProbability = p->immuneInfectionProbability;
-	world->proximity = p->proximity;
-	std::cout << "Height " << world->worldHeight << " Width"
-		  << world->worldWidth << '\n';
-
+	world->cuda_random_state = (void*)d_state;
 	return 0;
 }
 
@@ -119,7 +108,7 @@ bool __device__ world_should_infect(world_t *p, size_t i, size_t j,
 {
 	return world_get_nb_infected_neighbours(p, i, j) &&
 	       should_happen(probability,
-			     &p->random_state[i * p->params.worldWidth + j]);
+			     &((curandState*)p->cuda_random_state)[i * p->params.worldWidth + j]);
 }
 void __device__ world_infect_if_should_infect(world_t *p, state_t *grid,
 					      size_t i, size_t j,
@@ -136,7 +125,7 @@ void __device__ world_handle_infected(world_t *p, state_t *world, size_t i,
 
 	if (p->infectionDurationGrid[index] == 0) {
 		if (should_happen(p->params.deathProbability,
-				  &p->random_state[index])) {
+				  &((curandState*)p->cuda_random_state)[index])) {
 			world[index] = DEAD;
 		} else {
 			world[index] = IMMUNE;
@@ -173,37 +162,11 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 		case DEAD:
 			break;
 		}
-		w->grid[index] = result_grid[index];
 	}
 }
 void world_update(world_t *p, void *raw)
 {
-	cuda_prepare_update_t *update_data = (cuda_prepare_update_t *)raw;
-	const size_t world_size = world_world_size(&p->params);
-	const size_t GRID_SIZE = world_size * sizeof(state_t);
-	const size_t INFECTION_GRID_SIZE = world_size * sizeof(uint8_t);
-
-	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
-	dim3 grid((p->params.worldWidth + block.x - 1) / block.x,
-		  (p->params.worldHeight + block.y - 1) / block.y);
-	world_update_k<<<grid, block>>>(update_data->d_world,
-					  update_data->d_tmp_grid);
-
-	checkCudaErrors(cudaMemcpy(p->grid, update_data->d_tmp_grid, GRID_SIZE,
-				   cudaMemcpyDeviceToHost));
-
-	checkCudaErrors(cudaMemcpy(p->infectionDurationGrid,
-				   update_data->d_infection_duration_grid,
-				   INFECTION_GRID_SIZE,
-				   cudaMemcpyDeviceToHost));
-
-	cudaFree(update_data->d_tmp_grid);
-	cudaFree(update_data->d_curr_grid);
-	cudaFree(update_data->d_infection_duration_grid);
-	cudaFree(update_data->d_world);
-}
-void *world_prepare_update(const world_t *p)
-{
+	(void) raw;
 	const size_t world_size = world_world_size(&p->params);
 	const size_t GRID_SIZE = world_size * sizeof(state_t);
 	const size_t INFECTION_GRID_SIZE = world_size * sizeof(uint8_t);
@@ -221,6 +184,7 @@ void *world_prepare_update(const world_t *p)
 	world.grid = d_grid;
 	world.infectionDurationGrid = d_infection_duration_grid;
 	world.params = p->params;
+	world.cuda_random_state = p->cuda_random_state;
 
 	world_t *d_world;
 
@@ -242,12 +206,33 @@ void *world_prepare_update(const world_t *p)
 	cuda_prepare.d_tmp_grid = d_tmp_grid;
 	cuda_prepare.d_infection_duration_grid = d_infection_duration_grid;
 
+	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
+	dim3 grid((p->params.worldWidth + block.x - 1) / block.x,
+		  (p->params.worldHeight + block.y - 1) / block.y);
+	world_update_k<<<grid, block>>>(cuda_prepare.d_world,
+					  cuda_prepare.d_tmp_grid);
+
+	checkCudaErrors(cudaMemcpy(p->grid, cuda_prepare.d_tmp_grid, GRID_SIZE,
+				   cudaMemcpyDeviceToHost));
+
+	checkCudaErrors(cudaMemcpy(p->infectionDurationGrid,
+				   cuda_prepare.d_infection_duration_grid,
+				   INFECTION_GRID_SIZE,
+				   cudaMemcpyDeviceToHost));
+
+	cudaFree(cuda_prepare.d_tmp_grid);
+	cudaFree(cuda_prepare.d_curr_grid);
+	cudaFree(cuda_prepare.d_infection_duration_grid);
+	cudaFree(cuda_prepare.d_world);
+}
+void *world_prepare_update(const world_t *p)
+{
 	return (void *)&cuda_prepare;
 }
 
 void world_destroy(world_t *w)
 {
-	cudaFree(w->random_state);
+	cudaFree(w->cuda_random_state);
 	world_destroy_common(w);
 }
 

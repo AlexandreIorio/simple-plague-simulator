@@ -1,19 +1,17 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#ifdef __CUDACC__
-#include <curand_kernel.h>
-#include <curand.h>
+
+#ifndef WORLD_H
+#define WORLD_H
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#ifndef world_H
-#define world_H
+enum state { EMPTY = 0, HEALTHY, INFECTED, DEAD, IMMUNE };
 
-/*#ifdef __cplusplus*/
-/*extern "C" {*/
-/*#endif*/
-
-typedef enum { EMPTY = 0, HEALTHY, INFECTED, DEAD, IMMUNE } state_t;
+typedef uint8_t state_t;
 
 typedef struct {
 	size_t worldHeight;
@@ -31,19 +29,12 @@ typedef struct {
 typedef struct {
 	state_t *grid;
 	uint8_t *infectionDurationGrid;
-#ifdef __CUDACC__
-	curandState *random_state;
-	size_t worldHeight;
-	size_t worldWidth;
-	size_t populationPercent;
-	size_t initialInfected;
-	size_t initialImmune;
-	int32_t deathProbability;
-	int32_t infectionDuration;
-	int32_t healthyInfectionProbability;
-	int32_t immuneInfectionProbability;
-	int32_t proximity;
-#endif
+	/* 
+	* only used by cuda. Can't use a #ifdef __CUDACC__ as this file
+	* is included in .c and .cpp files and when those files 
+	* get compiled, CUDACC is not defined
+	*/
+	void *cuda_random_state; 
 	world_parameters_t params;
 } world_t;
 
@@ -95,8 +86,8 @@ void world_update(world_t *w, void *tmp);
 ///@param the world
 void world_destroy(world_t *w);
 
-/*#ifdef __cplusplus*/
-/*}*/
-/*#endif*/
+#ifdef __cplusplus
+}
+#endif
 
 #endif // world_H
