@@ -232,6 +232,7 @@ int main(int argc, char *argv[])
 		return ret;
 	}
 
+    return 0;
 	std::cout << "-----------------------------------\n";
 	std::cout << "         Plague Simulator\n";
 	std::cout << "-----------------------------------\n";
