@@ -21,11 +21,11 @@ typedef struct {
 	size_t populationPercent;
 	size_t initialInfected;
 	size_t initialImmune;
-	int deathProbability;
-	int infectionDuration;
-	int healthyInfectionProbability;
-	int immuneInfectionProbability;
-	int proximity;
+	int32_t deathProbability;
+	int32_t infectionDuration;
+	int32_t healthyInfectionProbability;
+	int32_t immuneInfectionProbability;
+	int32_t proximity;
 } world_parameters_t;
 
 typedef struct {
