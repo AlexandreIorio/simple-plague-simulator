@@ -98,6 +98,18 @@ int world_init(world_t *world, const world_parameters_t *p)
 	cudaDeviceSynchronize();
 
 	world->random_state = d_state;
+	world->worldHeight = p->worldHeight;
+	world->worldWidth = p->worldWidth;
+	world->populationPercent = p->populationPercent;
+	world->initialInfected = p->initialInfected;
+	world->initialImmune = p->initialImmune;
+	world->deathProbability = p->deathProbability;
+	world->infectionDuration = p->infectionDuration;
+	world->healthyInfectionProbability = p->healthyInfectionProbability;
+	world->immuneInfectionProbability = p->immuneInfectionProbability;
+	world->proximity = p->proximity;
+	std::cout << "Height " << world->worldHeight << " Width"
+		  << world->worldWidth << '\n';
 
 	return 0;
 }

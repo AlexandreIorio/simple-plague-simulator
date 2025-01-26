@@ -231,6 +231,10 @@ int main(int argc, char *argv[])
 	if (ret < 0) {
 		return ret;
 	}
+#ifdef __CUDACC_
+	std::cout << "Height " << world->worldHeight << " Width"
+		  << world->worldWidth << '\n';
+#endif
 
 	std::cout << "-----------------------------------\n";
 	std::cout << "         Plague Simulator\n";

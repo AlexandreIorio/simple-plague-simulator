@@ -33,6 +33,16 @@ typedef struct {
 	uint8_t *infectionDurationGrid;
 #ifdef __CUDACC__
 	curandState *random_state;
+	size_t worldHeight;
+	size_t worldWidth;
+	size_t populationPercent;
+	size_t initialInfected;
+	size_t initialImmune;
+	int32_t deathProbability;
+	int32_t infectionDuration;
+	int32_t healthyInfectionProbability;
+	int32_t immuneInfectionProbability;
+	int32_t proximity;
 #endif
 	world_parameters_t params;
 } world_t;
