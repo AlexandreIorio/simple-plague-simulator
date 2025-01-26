@@ -29,12 +29,12 @@ typedef struct {
 } world_parameters_t;
 
 typedef struct {
-	world_parameters_t params;
 	state_t *grid;
 	uint8_t *infectionDurationGrid;
 #ifdef __CUDACC__
 	curandState *random_state;
 #endif
+	world_parameters_t params;
 } world_t;
 
 ///@brief inits the world passed with the params passed
