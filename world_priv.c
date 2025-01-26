@@ -45,24 +45,34 @@ int world_init_common(world_t *world, const world_parameters_t *p)
 
 	srand(time(NULL));
 
-
 #ifdef _OPENMP
 	const size_t max_threads = omp_get_max_threads();
-	const size_t people_to_infect_per_thread = p->initialInfected / max_threads;
-	const size_t people_to_infect_on_last_thread = p->initialInfected % max_threads;
-	const size_t people_to_immunize_per_thread = p->initialImmune / max_threads;
-	const size_t people_to_immunize_on_last_thread = p->initialImmune % max_threads;
+	const size_t people_to_infect_per_thread =
+		p->initialInfected / max_threads;
+	const size_t people_to_infect_on_last_thread =
+		p->initialInfected % max_threads;
+	const size_t people_to_immunize_per_thread =
+		p->initialImmune / max_threads;
+	const size_t people_to_immunize_on_last_thread =
+		p->initialImmune % max_threads;
 	const size_t people_to_spawn_per_thread = people_to_spawn / max_threads;
-	const size_t people_to_spawn_on_last_thread = people_to_spawn % max_threads;
+	const size_t people_to_spawn_on_last_thread =
+		people_to_spawn % max_threads;
 	const size_t chunk_per_thread = world_size / max_threads;
 
 #pragma omp parallel
 
 	const size_t start_index = omp_get_thread_num() * chunk_per_thread;
 	const bool is_last_thread = omp_get_thread_num() == max_threads - 1;
-	const size_t people_to_spawn = is_last_thread ? people_to_spawn_on_last_thread : people_to_spawn_per_thread;
-	const size_t infected_people_to_spawn = is_last_thread ? people_to_infect_on_last_thread : people_to_infect_per_thread;
-	const size_t immune_people_to_spawn = is_last_thread ? people_to_immunize_on_last_thread : people_to_immunize_per_thread;
+	const size_t people_to_spawn = is_last_thread ?
+					       people_to_spawn_on_last_thread :
+					       people_to_spawn_per_thread;
+	const size_t infected_people_to_spawn =
+		is_last_thread ? people_to_infect_on_last_thread :
+				 people_to_infect_per_thread;
+	const size_t immune_people_to_spawn =
+		is_last_thread ? people_to_immunize_on_last_thread :
+				 people_to_immunize_per_thread;
 #else
 	const size_t infected_people_to_spawn = p->initialInfected;
 	const size_t immune_people_to_spawn = p->initialImmune;
