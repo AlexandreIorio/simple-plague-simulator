@@ -27,7 +27,7 @@ $(TARGET_CUDA):
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 %.o: %.c
-	$(CXX) $(CCFLAGS) -c $< -o $@ 
+	$(CXX) $(CXXFLAGS) -c $< -o $@ 
 
 clean:
 	rm -f $(OBJS) $(TARGET_BASE) $(TARGET_CUDA)
