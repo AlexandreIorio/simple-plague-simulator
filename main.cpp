@@ -41,7 +41,6 @@ bool generateParameterFile(const std::string &filename,
 	file << parameterNames[6] << " " << w->proximity << "\n";
 	file << parameterNames[7] << " " << w->worldHeight << "\n";
 	file << parameterNames[8] << " " << w->worldWidth << "\n";
-
 	file.close();
 	std::cout << "Parameters written to " << filename << std::endl;
 	return true;
@@ -182,9 +181,8 @@ int main(int argc, char *argv[])
 		case 'd':
 			params.deathProbability = atoi(optarg);
 			break;
-
 		case 'r':
-			params.deathProbability = atoi(optarg);
+			total_rounds = atoi(optarg);
 			break;
 		case 'i':
 			params.initialInfected = atoi(optarg);
@@ -231,11 +229,6 @@ int main(int argc, char *argv[])
 	if (ret < 0) {
 		return ret;
 	}
-#ifdef __CUDACC_
-	std::cout << "Height " << world->worldHeight << " Width"
-		  << world->worldWidth << '\n';
-#endif
-
 	std::cout << "-----------------------------------\n";
 	std::cout << "         Plague Simulator\n";
 	std::cout << "-----------------------------------\n";
