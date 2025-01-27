@@ -7,6 +7,7 @@ CUDAFLAGS = --compiler-options '$(CCFLAGS)'
 LDFLAGS = -O3
 
 TARGET_BASE = plague-simulator-base
+TARGET_OMP = plague-simulator-omp
 TARGET_CUDA = plague-simulator-cuda
 
 SRC_CPP = $(wildcard *.cpp)
@@ -20,8 +21,14 @@ all: $(TARGET_BASE) $(TARGET_CUDA)
 $(TARGET_BASE): $(OBJS)
 	$(CXX) $(LDFLAGS) -o $@ $^ 
 
+$(TARGET_OMP): $(OBJS)
+	$(CXX) $(LDFLAGS) -fopenmp -o $@ $^ 
+
 $(TARGET_CUDA): 
 	./cuda_build.sh $(TARGET_CUDA)
+
+$(TARGET_CUDA_OMP): 
+	./cuda_build.sh $(TARGET_CUDA) -fopenmp
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
