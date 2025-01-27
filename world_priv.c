@@ -64,53 +64,57 @@ int world_init_common(world_t *world, const world_parameters_t *p)
 		people_to_spawn % max_threads;
 	const size_t chunk_per_thread = world_size / max_threads;
 
-#pragma omp parallel {
-	const size_t start_index = omp_get_thread_num() * chunk_per_thread;
-	const bool is_last_thread = omp_get_thread_num() == max_threads - 1;
-	const size_t people_to_spawn = is_last_thread ?
-					       people_to_spawn_on_last_thread :
-					       people_to_spawn_per_thread;
-	const size_t infected_people_to_spawn =
-		is_last_thread ? people_to_infect_on_last_thread :
-				 people_to_infect_per_thread;
-	const size_t immune_people_to_spawn =
-		is_last_thread ? people_to_immunize_on_last_thread :
-				 people_to_immunize_per_thread;
+#pragma omp parallel
+	{
+		const size_t start_index =
+			omp_get_thread_num() * chunk_per_thread;
+		const bool is_last_thread = omp_get_thread_num() ==
+					    max_threads - 1;
+		const size_t people_to_spawn =
+			is_last_thread ? people_to_spawn_on_last_thread :
+					 people_to_spawn_per_thread;
+		const size_t infected_people_to_spawn =
+			is_last_thread ? people_to_infect_on_last_thread :
+					 people_to_infect_per_thread;
+		const size_t immune_people_to_spawn =
+			is_last_thread ? people_to_immunize_on_last_thread :
+					 people_to_immunize_per_thread;
 #else
 	const size_t infected_people_to_spawn = p->initialInfected;
 	const size_t immune_people_to_spawn = p->initialImmune;
 #endif
-	size_t people = 0;
-	size_t people_infected = 0;
-	size_t people_immune = 0;
+		size_t people = 0;
+		size_t people_infected = 0;
+		size_t people_immune = 0;
 
-	while (people < people_to_spawn) {
+		while (people < people_to_spawn) {
 #ifdef _OPENMP
-		const size_t i = start_index + (rand() % chunk_per_thread);
+			const size_t i =
+				start_index + (rand() % chunk_per_thread);
 #else
 		const size_t i = rand() % world_size;
 
 #endif
-		if (world->grid[i] != EMPTY) {
-			continue;
+			if (world->grid[i] != EMPTY) {
+				continue;
+			}
+			++people;
+			if (people_infected < infected_people_to_spawn) {
+				world->grid[i] = INFECTED;
+				++people_infected;
+				continue;
+			}
+			if (people_immune < immune_people_to_spawn) {
+				world->grid[i] = IMMUNE;
+				++people_immune;
+				continue;
+			}
+			world->grid[i] = HEALTHY;
 		}
-		++people;
-		if (people_infected < infected_people_to_spawn) {
-			world->grid[i] = INFECTED;
-			++people_infected;
-			continue;
-		}
-		if (people_immune < immune_people_to_spawn) {
-			world->grid[i] = IMMUNE;
-			++people_immune;
-			continue;
-		}
-		world->grid[i] = HEALTHY;
-	}
-	return 0;
 #ifdef _OPENMP
-}
+	}
 #endif
+	return 0;
 }
 
 void world_destroy_common(world_t *w)
