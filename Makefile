@@ -1,12 +1,12 @@
-.PHONY: all std openmp cuda clean
+.PHONY: all std omp cuda clean
 
-all: std openmp cuda
+all: std omp cuda
 
 std:
 	$(MAKE) -f Makefile.std
 
-openmp:
-	$(MAKE) -f Makefile.openmp
+omp:
+	$(MAKE) -f Makefile.omp
 
 cuda:
 	$(MAKE) -f Makefile.cuda
