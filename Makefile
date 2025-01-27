@@ -26,10 +26,10 @@ $(TARGET_OMP): $(OBJS)
 	$(CXX) $(LDFLAGS) -fopenmp -o $@ $^ 
 
 $(TARGET_CUDA): 
-	./cuda_build.sh $(TARGET_CUDA)
+	./cuda_build.sh $@
 
 $(TARGET_CUDA_OMP): 
-	./cuda_build.sh $(TARGET_CUDA) -fopenmp
+	./cuda_build.sh $@ -fopenmp
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
