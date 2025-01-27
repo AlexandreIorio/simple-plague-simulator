@@ -9,6 +9,7 @@ LDFLAGS = -O3
 TARGET_BASE = plague-simulator-base
 TARGET_OMP = plague-simulator-omp
 TARGET_CUDA = plague-simulator-cuda
+TARGET_OMP_CUDA = plague-simulator-cuda-omp
 
 SRC_CPP = $(wildcard *.cpp)
 SRC_CU = $(wildcard *.cu)
@@ -16,7 +17,7 @@ SRC_C = $(wildcard *.c)
 
 OBJS = world.o world_priv.o world_common.o timeline.o main.o
 
-all: $(TARGET_BASE) $(TARGET_CUDA)
+all: $(TARGET_BASE) $(TARGET_CUDA) $(TARGET_OMP) $(TARGET_CUDA_OMP)
 
 $(TARGET_BASE): $(OBJS)
 	$(CXX) $(LDFLAGS) -o $@ $^ 
