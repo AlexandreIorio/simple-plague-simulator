@@ -13,5 +13,5 @@ cuda:
 
 clean:
 	$(MAKE) -f Makefile.std clean
-	$(MAKE) -f Makefile.openmp clean
+	$(MAKE) -f Makefile.omp clean
 	$(MAKE) -f Makefile.cuda clean
