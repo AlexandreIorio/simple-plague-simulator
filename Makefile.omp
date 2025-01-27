@@ -1,0 +1,27 @@
+CC = gcc
+CXX = g++
+CFLAGS = -O2 -Wall -fopenmp
+SRC_DIR = src
+BUILD_DIR = build/openmp
+
+TARGET = $(BUILD_DIR)/app
+OBJS = $(BUILD_DIR)/world.o \
+       $(BUILD_DIR)/world_priv.o \
+       $(BUILD_DIR)/world_common.o \
+       $(BUILD_DIR)/timeline.o \
+       $(BUILD_DIR)/main.o
+
+$(TARGET): $(OBJS)
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) -o $@ $^
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	rm -rf $(BUILD_DIR)
