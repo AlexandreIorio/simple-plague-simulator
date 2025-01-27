@@ -9,7 +9,7 @@ LDFLAGS = -O3
 TARGET_BASE = plague-simulator-base
 TARGET_OMP = plague-simulator-omp
 TARGET_CUDA = plague-simulator-cuda
-TARGET_OMP_CUDA = plague-simulator-cuda-omp
+TARGET_CUDA_OMP = plague-simulator-cuda-omp
 
 SRC_CPP = $(wildcard *.cpp)
 SRC_CU = $(wildcard *.cu)
@@ -38,4 +38,4 @@ $(TARGET_CUDA_OMP):
 	$(CXX) $(CXXFLAGS) -c $< -o $@ 
 
 clean:
-	rm -f $(OBJS) $(TARGET_BASE) $(TARGET_CUDA)
+	rm -f $(OBJS) $(TARGET_BASE) $(TARGET_CUDA) $(TARGET_CUDA_OMP) $(TARGET_OMP)
