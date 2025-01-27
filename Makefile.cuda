@@ -14,15 +14,15 @@ $(TARGET): $(OBJS)
 	@mkdir -p $(BUILD_DIR)
 	$(NVCC) $(CFLAGS) -o $@ $^
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cu
+$(BUILD_DIR)/%.o: %.cu
 	@mkdir -p $(BUILD_DIR)
 	$(NVCC) $(CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+$(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(BUILD_DIR)
 	$(NVCC) $(CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+$(BUILD_DIR)/%.o: %.cpp
 	@mkdir -p $(BUILD_DIR)
 	$(NVCC) $(CFLAGS) -c $< -o $@
 
