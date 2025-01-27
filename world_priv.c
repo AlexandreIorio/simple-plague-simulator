@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 static size_t world_initial_population(const world_parameters_t *p)
 {
@@ -63,8 +64,7 @@ int world_init_common(world_t *world, const world_parameters_t *p)
 		people_to_spawn % max_threads;
 	const size_t chunk_per_thread = world_size / max_threads;
 
-#pragma omp parallel
-
+#pragma omp parallel {
 	const size_t start_index = omp_get_thread_num() * chunk_per_thread;
 	const bool is_last_thread = omp_get_thread_num() == max_threads - 1;
 	const size_t people_to_spawn = is_last_thread ?
@@ -108,6 +108,9 @@ int world_init_common(world_t *world, const world_parameters_t *p)
 		world->grid[i] = HEALTHY;
 	}
 	return 0;
+#ifdef _OPENMP
+}
+#endif
 }
 
 void world_destroy_common(world_t *w)
