@@ -1,4 +1,7 @@
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 #include "world_priv.h"
 #include <time.h>
 #include <stdio.h>
