@@ -83,7 +83,13 @@ void world_update(world_t *p, void *raw)
 	state_t *tmp_world = (state_t *)raw;
 	memcpy(tmp_world, p->grid, world_size * sizeof(*p->grid));
 
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
 	for (size_t i = 0; i < p->params.worldHeight; i++) {
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
 		for (size_t j = 0; j < p->params.worldWidth; j++) {
 			switch (p->grid[i * p->params.worldWidth + j]) {
 			case HEALTHY:
