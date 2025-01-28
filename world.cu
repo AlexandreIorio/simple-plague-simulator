@@ -81,6 +81,47 @@ typedef struct {
 } cuda_prepare_update_t;
 
 static cuda_prepare_update_t cuda_prepare;
+static void init_device_pointers(world_t* p){
+	const size_t world_size = world_world_size(&p->params);
+	const size_t GRID_SIZE = world_size * sizeof(state_t);
+	const size_t INFECTION_GRID_SIZE = world_size * sizeof(uint8_t);
+
+	state_t *d_grid;
+	state_t *d_tmp_grid;
+	uint8_t *d_infection_duration_grid;
+
+	checkCudaErrors(cudaMalloc((void **)&d_grid, GRID_SIZE));
+	checkCudaErrors(cudaMalloc((void **)&d_tmp_grid, GRID_SIZE));
+	checkCudaErrors(cudaMalloc((void **)&d_infection_duration_grid,
+				   INFECTION_GRID_SIZE));
+
+	world_t world;
+
+	world.grid = d_grid;
+	world.infectionDurationGrid = d_infection_duration_grid;
+	world.params = p->params;
+	world.cuda_random_state = p->cuda_random_state;
+
+	world_t *d_world;
+
+	checkCudaErrors(cudaMalloc((void **)&d_world, sizeof(world_t)));
+
+	checkCudaErrors(
+		cudaMemcpy(d_grid, p->grid, GRID_SIZE, cudaMemcpyHostToDevice));
+	checkCudaErrors(cudaMemcpy(d_tmp_grid, p->grid, GRID_SIZE,
+				   cudaMemcpyHostToDevice));
+	checkCudaErrors(
+		cudaMemcpy(d_infection_duration_grid, p->infectionDurationGrid,
+			   INFECTION_GRID_SIZE, cudaMemcpyHostToDevice));
+
+	checkCudaErrors(cudaMemcpy(d_world, &world, sizeof(world_t),
+				   cudaMemcpyHostToDevice));
+
+	cuda_prepare.d_world = d_world;
+	cuda_prepare.d_curr_grid = d_grid;
+	cuda_prepare.d_tmp_grid = d_tmp_grid;
+	cuda_prepare.d_infection_duration_grid = d_infection_duration_grid;
+}
 
 static __global__ void init_population_kernel(
 	state_t *grid, const world_parameters_t *p, size_t people_to_spawn,
@@ -170,44 +211,7 @@ int world_init(world_t *world, const world_parameters_t *p)
 
 	cudaFree(d_grid);
 
-	const size_t GRID_SIZE = world_size * sizeof(state_t);
-	const size_t INFECTION_GRID_SIZE = world_size * sizeof(uint8_t);
-	state_t *d_grid;
-	state_t *d_tmp_grid;
-	uint8_t *d_infection_duration_grid;
-
-	checkCudaErrors(cudaMalloc((void **)&d_grid, GRID_SIZE));
-	checkCudaErrors(cudaMalloc((void **)&d_tmp_grid, GRID_SIZE));
-	checkCudaErrors(cudaMalloc((void **)&d_infection_duration_grid,
-				   INFECTION_GRID_SIZE));
-
-	world_t world;
-
-	world.grid = d_grid;
-	world.infectionDurationGrid = d_infection_duration_grid;
-	world.params = p->params;
-	world.cuda_random_state = p->cuda_random_state;
-
-	world_t *d_world;
-
-	checkCudaErrors(cudaMalloc((void **)&d_world, sizeof(world_t)));
-
-	checkCudaErrors(
-		cudaMemcpy(d_grid, p->grid, GRID_SIZE, cudaMemcpyHostToDevice));
-	checkCudaErrors(cudaMemcpy(d_tmp_grid, p->grid, GRID_SIZE,
-				   cudaMemcpyHostToDevice));
-	checkCudaErrors(
-		cudaMemcpy(d_infection_duration_grid, p->infectionDurationGrid,
-			   INFECTION_GRID_SIZE, cudaMemcpyHostToDevice));
-
-	checkCudaErrors(cudaMemcpy(d_world, &world, sizeof(world_t),
-				   cudaMemcpyHostToDevice));
-
-	cuda_prepare.d_world = d_world;
-	cuda_prepare.d_curr_grid = d_grid;
-	cuda_prepare.d_tmp_grid = d_tmp_grid;
-	cuda_prepare.d_infection_duration_grid = d_infection_duration_grid;
-
+	init_device_pointers(world);
 	return 0;
 }
 
