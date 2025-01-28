@@ -341,6 +341,7 @@ int main(int argc, char *argv[])
 		round_elapsed += (finish.tv_nsec - start.tv_nsec) / 1e9;
 
 		total_elapsed += round_elapsed;
+		++nb_rounds;
 
 		if (!tl_max_size_reached) {
 			tl_err =
