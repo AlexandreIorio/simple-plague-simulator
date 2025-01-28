@@ -323,8 +323,8 @@ int main(int argc, char *argv[])
 			break;
 		}
 
-		if (tl.nb_rounds % 100 == 0) {
-			std::cout << "Round" << tl.nb_rounds << '\n';
+		if (nb_rounds % 10 == 0) {
+			std::cout << "Round " << nb_rounds << '\n';
 		}
 
 		void *ret = world_prepare_update(&world);
