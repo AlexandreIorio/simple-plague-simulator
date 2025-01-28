@@ -227,15 +227,15 @@ int main(int argc, char *argv[])
 	std::cout << "-----------------------------------\n";
 	std::cout << "         Plague Simulator\n";
 	std::cout << "-----------------------------------\n";
-    #ifdef _CUDA
-    std::cout << "CUDA";
-    #elif _OPENMP
-    std::cout << "OpenMP";
-    #else 
-    std::cout << "CPU";
-    #endif
-    std::cout << "\n";
 	std::cout << "Runtime : ";
+#ifdef _CUDA
+	std::cout << "CUDA";
+#elif _OPENMP
+	std::cout << "OpenMP";
+#else
+	std::cout << "CPU";
+#endif
+	std::cout << "\n";
 	std::cout << "------------------------------------\n";
 	std::cout << "Parameters\n";
 	std::cout << "------------------------------------\n";
@@ -261,11 +261,11 @@ int main(int argc, char *argv[])
 		<< "Population immunized        : " << params.initialImmune
 		<< "%\n";
 	std::cout << "\n";
-    std::cout << "-----------------------------------\n";
+	std::cout << "-----------------------------------\n";
 	std::cout << "         Initialisation\n";
 	std::cout << "-----------------------------------\n";
 
-    std::cout << "Starting ..." << std::endl; 
+	std::cout << "Initializing World ..." << std::endl;
 	struct timespec start, finish;
 
 	world_t world;
@@ -277,18 +277,20 @@ int main(int argc, char *argv[])
 	}
 	clock_gettime(CLOCK_MONOTONIC, &finish);
 
-    double init_elapsed = (finish.tv_sec - start.tv_sec);
-    init_elapsed += (finish.tv_nsec - start.tv_nsec) / 1e9;
+	double init_elapsed = (finish.tv_sec - start.tv_sec);
+	init_elapsed += (finish.tv_nsec - start.tv_nsec) / 1e9;
 
-    std::cout << "Initialisation done after: " << init_elapsed << " s" << std::endl; 
+	std::cout << "Initialization Duration: " << init_elapsed << " s"
+		  << std::endl;
 
 	int initialImmune = world_get_immune(&world);
 
 	std::cout << "------------------------------------\n";
 	std::cout << "Initial world :\n";
 	std::cout << "------------------------------------\n";
-	std::cout << "Number of healty people   : " << world_get_healthy(&world)
-		  << '\n';
+	std::cout
+		<< "Number of healthy people   : " << world_get_healthy(&world)
+		<< '\n';
 	std::cout
 		<< "Number of infected people : " << world_get_infected(&world)
 		<< '\n';
@@ -298,7 +300,6 @@ int main(int argc, char *argv[])
 	std::cout << "Simulation\n";
 	std::cout << "------------------------------------\n";
 	std::cout << "Simulation started\n";
-
 
 	int err;
 	double total_elapsed = 0;
