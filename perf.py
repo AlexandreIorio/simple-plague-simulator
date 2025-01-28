@@ -7,7 +7,7 @@ def main():
 
     for target in TARGETS:
         p = subprocess.Popen(
-            ["build", target, "app", "-f", "parameters.txt", "-r", "100"],
+            [f"build/{target}/app", "-f", "parameters.txt", "-r", "100"],
             stdout=subprocess.PIPE,
         )
 
