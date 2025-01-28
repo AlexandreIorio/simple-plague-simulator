@@ -1,3 +1,6 @@
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 #include <assert.h>
 #include <stdint.h>
 #include <stddef.h>
