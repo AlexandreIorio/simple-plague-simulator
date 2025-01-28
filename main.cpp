@@ -291,9 +291,8 @@ int main(int argc, char *argv[])
 	std::cout << "------------------------------------\n";
 	std::cout << "Initial world :\n";
 	std::cout << "------------------------------------\n";
-	std::cout
-		<< "Number of healthy people  : " << world_get_healthy(&world)
-		<< '\n';
+	std::cout << "Number of healthy people  : " << world_get_healthy(&world)
+		  << '\n';
 	std::cout
 		<< "Number of infected people : " << world_get_infected(&world)
 		<< '\n';
@@ -375,9 +374,8 @@ int main(int argc, char *argv[])
 	std::cout << "Simulation took           : " << total_elapsed << " s\n";
 	std::cout << "Total Time                : " << total_time << " s\n";
 	std::cout << "Number of turns           : " << nb_rounds << '\n';
-	std::cout
-		<< "Number of healthy people  : " << world_get_healthy(&world)
-		<< '\n';
+	std::cout << "Number of healthy people  : " << world_get_healthy(&world)
+		  << '\n';
 	std::cout << "Number of immunized people: " << world_get_immune(&world)
 		  << '\n';
 	std::cout << "Number of survivor        : "
