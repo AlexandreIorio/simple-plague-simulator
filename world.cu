@@ -85,7 +85,7 @@ static cuda_prepare_update_t cuda_prepare;
 static __global__ void init_population_kernel(
 	state_t *grid, const world_parameters_t *p, size_t people_to_spawn,
 	curandState *random_states,
-	uint8_t *occupation_buffer) // Buffer used to lock a random position
+	int *occupation_buffer) // Buffer used to lock a random position
 {
 	const size_t world_size = p->worldWidth * p->worldHeight;
 	int i = blockIdx.y * blockDim.y + threadIdx.y;
@@ -150,8 +150,8 @@ int world_init(world_t *world, const world_parameters_t *p)
 	cudaMemset(d_grid, EMPTY, world_size * sizeof(state_t));
 	cudaMemset(d_infectionDurationGrid, 0, world_size * sizeof(uint8_t));
 
-	uint8_t *d_occupation_buffer;
-	cudaMalloc(&d_occupation_buffer,
+	int *d_occupation_buffer;
+	cudaMalloc((void**)&d_occupation_buffer,
 		   world_size * sizeof(*d_occupation_buffer));
 
 	cudaMemset(d_occupation_buffer, 0,
