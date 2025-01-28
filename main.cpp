@@ -370,7 +370,10 @@ int main(int argc, char *argv[])
 		std::cout << "Timeline created\n";
 	}
 
+	const double total_time = init_elapsed + total_elapsed;
+	std::cout << "Initialization took       : " << init_elapsed << " s\n";
 	std::cout << "Simulation took           : " << total_elapsed << " s\n";
+	std::cout << "Total Time                : " << total_time << " s\n";
 	std::cout << "Number of turns           : " << nb_rounds << '\n';
 	std::cout
 		<< "Number of healthy people   : " << world_get_healthy(&world)
