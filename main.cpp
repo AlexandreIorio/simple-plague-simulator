@@ -21,7 +21,7 @@ constexpr const char *parameterNames[] = {
 	"world_width",
 };
 
-#define MAX_TIMELINE_SIZE 500'000
+#define MAX_TIMELINE_SIZE 500000000
 
 bool generateParameterFile(const std::string &filename,
 			   const world_parameters_t *w)
