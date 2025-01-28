@@ -9,7 +9,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-static size_t world_initial_population(const world_parameters_t *p)
+size_t world_initial_population(const world_parameters_t *p)
 {
 	return world_world_size(p) * p->populationPercent / 100;
 }

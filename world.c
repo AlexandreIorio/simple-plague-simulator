@@ -51,7 +51,7 @@ int world_init(world_t *world, const world_parameters_t *p)
 		return -1;
 	}
 
-	const size_t people_to_spawn = world_size * p->populationPercent / 100;
+	const size_t people_to_spawn = world_initial_population(p);
 
 	if (!(people_to_spawn >= p->initialImmune + p->initialInfected)) {
 		return -1;

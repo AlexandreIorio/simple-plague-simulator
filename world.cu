@@ -159,10 +159,9 @@ int world_init(world_t *world, const world_parameters_t *p)
 	cudaMalloc(&d_occupation_buffer, world_size * sizeof(int));
 	cudaMemset(d_occupation_buffer, 0, world_size * sizeof(int));
 
-	int people_to_spawn =
-		world_world_size(p) * (double)p->populationPercent / 100;
+	size_t people_to_spawn = world_initial_population(p);
 
-	printf("People to spawn: %d\n", people_to_spawn);
+	printf("People to spawn: %zu\n", people_to_spawn);
 	init_population_kernel<<<grid, block>>>(
 		d_grid, d_infectionDurationGrid, world_size,
 		world->params.worldWidth, world->params.worldHeight,
