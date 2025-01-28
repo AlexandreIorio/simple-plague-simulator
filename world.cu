@@ -81,7 +81,8 @@ typedef struct {
 } cuda_prepare_update_t;
 
 static cuda_prepare_update_t cuda_prepare;
-static void init_device_pointers(world_t* p){
+static void init_device_pointers(world_t *p)
+{
 	const size_t world_size = world_world_size(&p->params);
 	const size_t GRID_SIZE = world_size * sizeof(state_t);
 	const size_t INFECTION_GRID_SIZE = world_size * sizeof(uint8_t);
@@ -286,6 +287,8 @@ static __global__ void world_update_k(world_t *w, state_t *result_grid)
 void world_update(world_t *p, void *raw)
 {
 	(void)raw;
+	const size_t world_size = world_world_size(&p->params);
+	const size_t GRID_SIZE = world_size * sizeof(state_t);
 	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
 	dim3 grid((p->params.worldWidth + block.x - 1) / block.x,
 		  (p->params.worldHeight + block.y - 1) / block.y);
