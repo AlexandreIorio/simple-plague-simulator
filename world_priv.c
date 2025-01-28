@@ -21,7 +21,7 @@ size_t world_world_size(const world_parameters_t *p)
 
 int world_init_common(world_t *world, const world_parameters_t *p)
 {
-if (!world) {
+	if (!world) {
 		return -1;
 	}
 
@@ -44,7 +44,6 @@ if (!world) {
 	memcpy(&world->params, p, sizeof(*p));
 
 	return 0;
-
 }
 
 void world_destroy_common(world_t *w)
