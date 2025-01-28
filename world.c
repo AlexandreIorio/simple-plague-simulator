@@ -24,8 +24,8 @@ static uint8_t world_get_nb_infected_neighbours(const world_t *p, size_t i,
 			if (dx == 0 && dy == 0) {
 				continue;
 			}
-			const int ni = i + dx;
-			const int nj = j + dy;
+			const size_t ni = i + dx;
+			const size_t nj = j + dy;
 			if (!(ni < p->params.worldHeight &&
 			      nj < p->params.worldWidth)) {
 				continue;
