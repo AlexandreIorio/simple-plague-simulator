@@ -317,8 +317,9 @@ int main(int argc, char *argv[])
 	}
 	bool tl_max_size_reached = false;
 
+	size_t nb_rounds = 0;
 	while (world_get_infected(&world) > 0) {
-		if (total_rounds > 0 && tl.nb_rounds >= total_rounds) {
+		if (total_rounds > 0 && nb_rounds >= total_rounds) {
 			break;
 		}
 
@@ -344,7 +345,7 @@ int main(int argc, char *argv[])
 				tl_max_size_reached = true;
 				std::cerr
 					<< "Max Timeline size reached at round "
-					<< tl.nb_rounds
+					<< nb_rounds
 					<< ". Extra rounds won't be saved\n";
 
 			} else if (tl_err != TL_OK) {
@@ -368,9 +369,10 @@ int main(int argc, char *argv[])
 	}
 
 	std::cout << "Simulation took           : " << total_elapsed << " s\n";
-	std::cout << "Number of turns           : " << tl.nb_rounds << '\n';
-	std::cout << "Number of healty people   : " << world_get_healthy(&world)
-		  << '\n';
+	std::cout << "Number of turns           : " << nb_rounds << '\n';
+	std::cout
+		<< "Number of healthy people   : " << world_get_healthy(&world)
+		<< '\n';
 	std::cout << "Number of immunized people: " << world_get_immune(&world)
 		  << '\n';
 	std::cout << "Number of survivor        : "

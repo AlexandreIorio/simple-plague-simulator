@@ -12,13 +12,12 @@ int timeline_init(timeline_t *tl, const world_parameters_t *params,
 		return -1;
 	}
 
-	tl->nb_rounds = 0;
 	tl->saved_rounds = 0;
 	tl->max_size = max_size;
 	memcpy(&tl->params, params, sizeof(tl->params));
 
 	fwrite(&FLAG, sizeof(FLAG), 1, tl->fp);
-	fwrite(&tl->saved_rounds, sizeof(tl->nb_rounds), 1, tl->fp);
+	fwrite(&tl->saved_rounds, sizeof(tl->saved_rounds), 1, tl->fp);
 	fwrite(&tl->params, sizeof(tl->params), 1, tl->fp);
 
 	return 0;
@@ -34,7 +33,6 @@ size_t timeline_expected_size(const world_parameters_t *params,
 }
 timeline_error_t timeline_push_round(timeline_t *tl, uint8_t *grid)
 {
-	++tl->nb_rounds;
 	if (timeline_expected_size(&tl->params, tl->saved_rounds) >
 	    tl->max_size) {
 		return TL_MAX_SIZE;
@@ -49,7 +47,7 @@ timeline_error_t timeline_save(timeline_t *tl)
 {
 	fseek(tl->fp, 0, SEEK_SET);
 	fwrite(&FLAG, sizeof(FLAG), 1, tl->fp);
-	fwrite(&tl->saved_rounds, sizeof(tl->nb_rounds), 1, tl->fp);
+	fwrite(&tl->saved_rounds, sizeof(tl->saved_rounds), 1, tl->fp);
 	fclose(tl->fp);
 	return TL_OK;
 }

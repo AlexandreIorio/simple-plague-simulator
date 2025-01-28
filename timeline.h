@@ -7,7 +7,6 @@ extern "C" {
 #endif
 typedef struct {
 	FILE *fp;
-	size_t nb_rounds;
 	size_t saved_rounds;
 	world_parameters_t params;
 	size_t max_size;
