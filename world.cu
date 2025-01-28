@@ -1,5 +1,3 @@
-#include <cstdint>
-#define __CUDACC__
 #ifdef __CUDACC__
 
 #include <iostream>
