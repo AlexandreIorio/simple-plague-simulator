@@ -49,10 +49,12 @@ def main():
             rounds = lines[-6].split(":")[1].strip()
             init, sim, total = times
             params = (target, width, height, rounds, init, sim, total)
-            csv_lines.append(",".join(str(param) for param in params))
+            csv_lines.append(",".join(str(param) for param in params) + "\n")
 
     with open(BENCHMARK_RESULT_FILE, "w") as f:
-        f.write("target, width, height, rounds, time_init, time_simulation, time_total")
+        f.write(
+            "target, width, height, rounds, time_init, time_simulation, time_total\n"
+        )
         f.writelines(csv_lines)
 
 
