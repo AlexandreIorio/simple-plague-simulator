@@ -227,7 +227,6 @@ int main(int argc, char *argv[])
 	std::cout << "-----------------------------------\n";
 	std::cout << "         Plague Simulator\n";
 	std::cout << "-----------------------------------\n";
-    std::cout << "Runtime :";
     #ifdef _CUDA
     std::cout << "CUDA";
     #elif _OPENMP
@@ -236,6 +235,7 @@ int main(int argc, char *argv[])
     std::cout << "CPU";
     #endif
     std::cout << "\n";
+	std::cout << "Runtime : ";
 	std::cout << "------------------------------------\n";
 	std::cout << "Parameters\n";
 	std::cout << "------------------------------------\n";
