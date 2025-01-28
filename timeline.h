@@ -10,6 +10,7 @@ typedef struct {
 	size_t saved_rounds;
 	world_parameters_t params;
 	size_t max_size;
+	size_t file_size;
 } timeline_t;
 
 typedef enum {

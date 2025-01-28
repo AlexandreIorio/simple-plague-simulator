@@ -33,12 +33,23 @@ size_t timeline_expected_size(const world_parameters_t *params,
 }
 timeline_error_t timeline_push_round(timeline_t *tl, uint8_t *grid)
 {
-	if (timeline_expected_size(&tl->params, tl->saved_rounds) >
-	    tl->max_size) {
+	if (tl->file_size >= tl->max_size) {
 		return TL_MAX_SIZE;
 	}
-	fwrite(grid, sizeof(*grid),
-	       tl->params.worldWidth * tl->params.worldHeight, tl->fp);
+	const size_t grid_size = tl->params.worldWidth * tl->params.worldHeight;
+	uint8_t count = 1;
+	uint8_t element = grid[0];
+	for (size_t i = 0; i < grid_size; ++i) {
+		if (count == 255 || grid[i] != element) {
+			fwrite(&count, sizeof(count), 1, tl->fp);
+			fwrite(&element, sizeof(*grid), 1, tl->fp);
+			tl->file_size += 2;
+			count = 1;
+			element = grid[i];
+		} else {
+			count++;
+		}
+	}
 	++tl->saved_rounds;
 	return TL_OK;
 }
