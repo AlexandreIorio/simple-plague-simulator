@@ -159,7 +159,7 @@ int world_init(world_t *world, const world_parameters_t *p)
 	world_parameters_t *d_p;
 
 	cudaMalloc((void **)&d_p, sizeof(*d_p));
-	cudaMemcpy(d_p, p, sizeof(*d_p));
+	cudaMemcpy(d_p, p, sizeof(*d_p), cudaMemcpyHostToDevice);
 
 	const size_t people_to_spawn = world_initial_population(p);
 
