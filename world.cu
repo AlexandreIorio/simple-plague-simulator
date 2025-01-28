@@ -142,16 +142,13 @@ int world_init(world_t *world, const world_parameters_t *p)
 	world->cuda_random_state = (void *)d_state;
 
 	state_t *d_grid;
-	uint8_t *d_infectionDurationGrid;
 
 	cudaMalloc(&d_grid, world_size * sizeof(state_t));
-	cudaMalloc(&d_infectionDurationGrid, world_size * sizeof(uint8_t));
 
 	cudaMemset(d_grid, EMPTY, world_size * sizeof(state_t));
-	cudaMemset(d_infectionDurationGrid, 0, world_size * sizeof(uint8_t));
 
 	int *d_occupation_buffer;
-	cudaMalloc((void**)&d_occupation_buffer,
+	cudaMalloc((void **)&d_occupation_buffer,
 		   world_size * sizeof(*d_occupation_buffer));
 
 	cudaMemset(d_occupation_buffer, 0,
@@ -170,11 +167,8 @@ int world_init(world_t *world, const world_parameters_t *p)
 
 	cudaMemcpy(world->grid, d_grid, world_size * sizeof(state_t),
 		   cudaMemcpyDeviceToHost);
-	cudaMemcpy(world->infectionDurationGrid, d_infectionDurationGrid,
-		   world_size * sizeof(uint8_t), cudaMemcpyDeviceToHost);
 
 	cudaFree(d_grid);
-	cudaFree(d_infectionDurationGrid);
 
 	return 0;
 }
