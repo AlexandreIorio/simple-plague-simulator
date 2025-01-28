@@ -1,3 +1,5 @@
+#include <cstdint>
+#define __CUDACC__
 #ifdef __CUDACC__
 
 #include <iostream>
@@ -82,29 +84,28 @@ typedef struct {
 
 static cuda_prepare_update_t cuda_prepare;
 
-__global__ void init_population_kernel(
-	state_t *grid, uint8_t *infection_duration_grid, size_t world_size,
-	size_t world_width, size_t world_height, int people_to_spawn,
-	int initial_infected, int initial_immune, uint8_t infection_duration,
+static __global__ void init_population_kernel(
+	state_t *grid, const world_parameters_t *p, size_t people_to_spawn,
 	curandState *random_states,
-	int *occupation_buffer) // buffer supplémentaire pour le lock
+	int *occupation_buffer) // Buffer used to lock a random position
 {
+	const size_t world_size = p->worldWidth * p->worldHeight;
 	int i = blockIdx.y * blockDim.y + threadIdx.y;
 	int j = blockIdx.x * blockDim.x + threadIdx.x;
 
-	if (i >= world_height || j >= world_width) {
+	if (i >= p->worldHeight || j >= p->worldWidth) {
 		return;
 	}
 
-	int index = i * world_width + j;
+	int index = i * p->worldWidth + j;
 	if (index >= people_to_spawn) {
 		return;
 	}
 
 	state_t state;
-	if (index < initial_infected) {
+	if (index < p->initialInfected) {
 		state = INFECTED;
-	} else if (index < initial_infected + initial_immune) {
+	} else if (index < p->initialInfected + p->initialImmune) {
 		state = IMMUNE;
 	} else {
 		state = HEALTHY;
@@ -116,10 +117,6 @@ __global__ void init_population_kernel(
 		// if occupation == 0 then write 1 to define cell usage
 		if (atomicCAS(&occupation_buffer[pos], 0, 1) == 0) {
 			grid[pos] = state;
-			if (state == INFECTED) {
-				infection_duration_grid[pos] =
-					infection_duration;
-			}
 			found_position = true;
 		}
 	}
@@ -155,18 +152,21 @@ int world_init(world_t *world, const world_parameters_t *p)
 	cudaMemset(d_grid, EMPTY, world_size * sizeof(state_t));
 	cudaMemset(d_infectionDurationGrid, 0, world_size * sizeof(uint8_t));
 
-	int *d_occupation_buffer;
-	cudaMalloc(&d_occupation_buffer, world_size * sizeof(int));
-	cudaMemset(d_occupation_buffer, 0, world_size * sizeof(int));
+	uint8_t *d_occupation_buffer;
+	cudaMalloc(&d_occupation_buffer,
+		   world_size * sizeof(*d_occupation_buffer));
 
-	size_t people_to_spawn = world_initial_population(p);
+	cudaMemset(d_occupation_buffer, 0,
+		   world_size * sizeof(*d_occupation_buffer));
+	world_parameters_t *d_p;
 
-	printf("People to spawn: %zu\n", people_to_spawn);
-	init_population_kernel<<<grid, block>>>(
-		d_grid, d_infectionDurationGrid, world_size,
-		world->params.worldWidth, world->params.worldHeight,
-		people_to_spawn, p->initialInfected, p->initialImmune,
-		p->infectionDuration, d_state, d_occupation_buffer);
+	cudaMalloc((void **)&d_p, sizeof(*d_p));
+	cudaMemcpy(d_p, p, sizeof(*d_p));
+
+	const size_t people_to_spawn = world_initial_population(p);
+
+	init_population_kernel<<<grid, block>>>(d_grid, d_p, people_to_spawn,
+						  d_state, d_occupation_buffer);
 
 	checkCudaErrors(cudaDeviceSynchronize());
 
