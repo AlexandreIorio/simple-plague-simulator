@@ -24,31 +24,32 @@ def main():
         f.write(PARAMETERS_FILE_CONTENT)
 
     csv_lines = []
-    for target, width, height in zip(TARGETS, WIDTH, HEIGHT):
-        p = subprocess.Popen(
-            [
-                f"build/{target}/app",
-                "-f",
-                BENCHMARK_FILE_PATH,
-                "-r",
-                str(ROUNDS),
-                "-w",
-                str(width),
-                "-h",
-                str(height),
-            ],
-            stdout=subprocess.PIPE,
-        )
+    for target in TARGETS:
+        for width, height in zip(WIDTH, HEIGHT):
+            p = subprocess.Popen(
+                [
+                    f"build/{target}/app",
+                    "-f",
+                    BENCHMARK_FILE_PATH,
+                    "-r",
+                    str(ROUNDS),
+                    "-w",
+                    str(width),
+                    "-h",
+                    str(height),
+                ],
+                stdout=subprocess.PIPE,
+            )
 
-        stdout, _ = p.communicate()
+            stdout, _ = p.communicate()
 
-        lines = stdout.decode().splitlines()
-        time_lines = lines[-9:-6]
-        times = [line.split(":")[1].replace("s", "").strip() for line in time_lines]
-        rounds = lines[-6].split(":")[1].strip()
-        init, sim, total = times
-        params = (target, width, height, rounds, init, sim, total)
-        csv_lines.append(",".join(str(param) for param in params))
+            lines = stdout.decode().splitlines()
+            time_lines = lines[-9:-6]
+            times = [line.split(":")[1].replace("s", "").strip() for line in time_lines]
+            rounds = lines[-6].split(":")[1].strip()
+            init, sim, total = times
+            params = (target, width, height, rounds, init, sim, total)
+            csv_lines.append(",".join(str(param) for param in params))
 
     with open(BENCHMARK_RESULT_FILE, "w") as f:
         f.write("target, width, height, rounds, time_init, time_simulation, time_total")
