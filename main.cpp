@@ -337,6 +337,11 @@ int main(int argc, char *argv[])
 		world_update(&world, ret);
 		clock_gettime(CLOCK_MONOTONIC, &finish);
 
+		double round_elapsed = (finish.tv_sec - start.tv_sec);
+		round_elapsed += (finish.tv_nsec - start.tv_nsec) / 1e9;
+
+		total_elapsed += round_elapsed;
+
 		if (!tl_max_size_reached) {
 			tl_err =
 				timeline_push_round(&tl, (uint8_t *)world.grid);
@@ -353,10 +358,6 @@ int main(int argc, char *argv[])
 				break;
 			}
 		}
-		double round_elapsed = (finish.tv_sec - start.tv_sec);
-		round_elapsed += (finish.tv_nsec - start.tv_nsec) / 1e9;
-
-		total_elapsed += round_elapsed;
 	}
 	std::cout << "------------------------------------\n";
 	std::cout << "Saving Timeline\n";
