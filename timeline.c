@@ -5,7 +5,7 @@
 const uint32_t FLAG = 0x1234cafe;
 
 int timeline_init(timeline_t *tl, const world_parameters_t *params,
-		  const char *path)
+		  const char *path, size_t max_size)
 {
 	tl->fp = fopen(path, "wb");
 	if (!tl->fp) {
@@ -13,6 +13,7 @@ int timeline_init(timeline_t *tl, const world_parameters_t *params,
 	}
 
 	tl->nb_rounds = 0;
+	tl->max_size = max_size;
 	memcpy(&tl->params, params, sizeof(tl->params));
 
 	fwrite(&FLAG, sizeof(FLAG), 1, tl->fp);
@@ -22,21 +23,31 @@ int timeline_init(timeline_t *tl, const world_parameters_t *params,
 	return 0;
 }
 
-int timeline_push_round(timeline_t *tl, int *grid)
+size_t timeline_expected_size(const world_parameters_t *params,
+			      size_t nb_rounds)
 {
-	(void)grid;
-	// fwrite(grid, sizeof(*grid),
-	//        tl->params.worldWidth * tl->params.worldHeight, tl->fp);
+	return params->worldWidth * params->worldHeight * sizeof(uint8_t) *
+		       nb_rounds + // Grid size * nb of rounds
+	       sizeof(FLAG) +
+	       sizeof(size_t);
+}
+timeline_error_t timeline_push_round(timeline_t *tl, uint8_t *grid)
+{
+	if (timeline_expected_size(&tl->params, tl->nb_rounds) > tl->max_size) {
+		return TL_MAX_SIZE;
+	}
+	fwrite(grid, sizeof(*grid),
+	       tl->params.worldWidth * tl->params.worldHeight, tl->fp);
 
 	++tl->nb_rounds;
-	return 0;
+	return TL_OK;
 }
 
-int timeline_save(timeline_t *tl)
+timeline_error_t timeline_save(timeline_t *tl)
 {
 	fseek(tl->fp, 0, SEEK_SET);
 	fwrite(&FLAG, sizeof(FLAG), 1, tl->fp);
 	fwrite(&tl->nb_rounds, sizeof(tl->nb_rounds), 1, tl->fp);
 	fclose(tl->fp);
-	return 0;
+	return TL_OK;
 }

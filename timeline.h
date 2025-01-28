@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <stddef.h>
 #include <stdio.h>
 #include "world.h"
@@ -9,15 +10,22 @@ typedef struct {
 	FILE *fp;
 	size_t nb_rounds;
 	world_parameters_t params;
+	size_t max_size;
 } timeline_t;
 
+typedef enum {
+	TL_OK = 0,
+	TL_MAX_SIZE = 1,
+} timeline_error_t;
 int timeline_init(timeline_t *tl, const world_parameters_t *params,
-		  const char *path);
+		  const char *path, size_t max_size);
 
-int timeline_push_round(timeline_t *tl, int *grid);
+timeline_error_t timeline_push_round(timeline_t *tl, uint8_t *grid);
 
-int timeline_save(timeline_t *tl);
+timeline_error_t timeline_save(timeline_t *tl);
 
+size_t timeline_expected_size(const world_parameters_t *params,
+			      size_t nb_rounds);
 #ifdef __cplusplus
 }
 #endif

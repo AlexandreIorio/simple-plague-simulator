@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -8,7 +9,7 @@
 #include <sstream>
 #include "world.h"
 
-static const char *parameterNames[] = {
+constexpr const char *parameterNames[] = {
 	"population",
 	"healthy_infection_probability",
 	"immune_infection_probability",
@@ -19,6 +20,8 @@ static const char *parameterNames[] = {
 	"world_height",
 	"world_width",
 };
+
+#define MAX_TIMELINE_SIZE 500'000
 
 bool generateParameterFile(const std::string &filename,
 			   const world_parameters_t *w)
@@ -301,16 +304,18 @@ int main(int argc, char *argv[])
 	std::cout << "------------------------------------\n";
 	std::cout << "Simulation started\n";
 
-	int err;
+	timeline_error_t tl_err;
 	double total_elapsed = 0;
 	timeline_t tl;
 
-	ret = timeline_init(&tl, &world.params, "timeline.bin");
+	ret = timeline_init(&tl, &world.params, "timeline.bin",
+			    MAX_TIMELINE_SIZE);
 	if (ret < 0) {
 		std::cerr << "Failed to allocate memory to store world state"
 			  << '\n';
 		return 1;
 	}
+	bool tl_max_size_reached = false;
 
 	while (world_get_infected(&world) > 0) {
 		if (total_rounds > 0 && tl.nb_rounds >= total_rounds) {
@@ -331,10 +336,21 @@ int main(int argc, char *argv[])
 		world_update(&world, ret);
 		clock_gettime(CLOCK_MONOTONIC, &finish);
 
-		err = timeline_push_round(&tl, (int *)world.grid);
-		if (err < 0) {
-			std::cerr << "Failed to save last round\n";
-			break;
+		if (!tl_max_size_reached) {
+			tl_err =
+				timeline_push_round(&tl, (uint8_t *)world.grid);
+
+			if (tl_err == TL_MAX_SIZE) {
+				tl_max_size_reached = true;
+				std::cerr
+					<< "Max Timeline size reached at round "
+					<< tl.nb_rounds
+					<< ". Extra rounds won't be saved\n";
+
+			} else if (tl_err != TL_OK) {
+				std::cerr << "Failed to save last round\n";
+				break;
+			}
 		}
 		double round_elapsed = (finish.tv_sec - start.tv_sec);
 		round_elapsed += (finish.tv_nsec - start.tv_nsec) / 1e9;
@@ -344,8 +360,8 @@ int main(int argc, char *argv[])
 	std::cout << "------------------------------------\n";
 	std::cout << "Saving Timeline\n";
 
-	err = timeline_save(&tl);
-	if (err < 0) {
+	tl_err = timeline_save(&tl);
+	if (tl_err != TL_OK) {
 		std::cout << "Failed to create timeline\n";
 	} else {
 		std::cout << "Timeline created\n";
