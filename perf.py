@@ -43,6 +43,7 @@ def main():
 
             stdout, _ = p.communicate()
 
+            print(f"{target} - ({width} {height})")
             lines = stdout.decode().splitlines()
             time_lines = lines[-9:-6]
             times = [line.split(":")[1].replace("s", "").strip() for line in time_lines]
