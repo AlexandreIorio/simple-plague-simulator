@@ -82,12 +82,37 @@ typedef struct {
 
 static cuda_prepare_update_t cuda_prepare;
 
+__global__ void init_population_kernel(
+    state_t* grid,
+    uint8_t* infection_duration_grid,
+    size_t world_size,
+    size_t world_width,
+    size_t world_height,
+    int people_to_spawn,
+    int initial_infected,
+    int initial_immune,
+    uint8_t infection_duration,
+    curandState* random_states)
+{
+    int i = blockIdx.y * blockDim.y + threadIdx.y;
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (i >= world_height || j >= world_width) {
+        return;
+    }
+
+    int index = i * world_width + j;
+    
+    return;
+}
+
 int world_init(world_t *world, const world_parameters_t *p)
 {
 	int err = world_init_common(world, p);
 	if (err < 0) {
 		return err;
 	}
+
 	curandState *d_state;
 	const size_t world_size = world_world_size(p);
 	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
@@ -99,7 +124,36 @@ int world_init(world_t *world, const world_parameters_t *p)
 	world_init_random_generator<<<grid, block>>>(d_state, world_size, 1337);
 	checkCudaErrors(cudaDeviceSynchronize());
 
-	world->cuda_random_state = (void*)d_state;
+	world->cuda_random_state = (void *)d_state;
+
+	state_t *d_grid;
+	uint8_t *d_infectionDurationGrid;
+
+	cudaMalloc(&d_grid, world_size * sizeof(state_t));
+	cudaMalloc(&d_infectionDurationGrid, world_size * sizeof(uint8_t));
+
+	cudaMemset(d_grid, EMPTY, world_size * sizeof(state_t));
+	cudaMemset(d_infectionDurationGrid, 0, world_size * sizeof(uint8_t));
+
+	int people_to_spawn =
+		world_world_size(p) * (double)p->populationPercent / 100;
+
+	init_population_kernel<<<block, grid>>>(
+		d_grid, d_infectionDurationGrid, world_size,
+		world->params.worldWidth, world->params.worldHeight,
+		people_to_spawn, p->initialInfected, p->initialImmune,
+		p->infectionDuration, d_state);
+
+	checkCudaErrors(cudaDeviceSynchronize());
+
+	cudaMemcpy(world->grid, d_grid, world_size * sizeof(state_t),
+		   cudaMemcpyDeviceToHost);
+	cudaMemcpy(world->infectionDurationGrid, d_infectionDurationGrid,
+		   world_size * sizeof(uint8_t), cudaMemcpyDeviceToHost);
+
+	cudaFree(d_grid);
+	cudaFree(d_infectionDurationGrid);
+
 	return 0;
 }
 
