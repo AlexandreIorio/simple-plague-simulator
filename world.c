@@ -14,7 +14,7 @@
 
 static inline bool should_happen(int probability)
 {
-	return probability < (rand() % 100);
+	return probability > (rand() % 100);
 }
 
 static uint8_t world_get_nb_infected_neighbours(const world_t *p, size_t i,
