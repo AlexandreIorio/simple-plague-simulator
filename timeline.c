@@ -2,7 +2,7 @@
 #include <string.h>
 #include "timeline.h"
 
-const uint32_t FLAG = 0x1234cafe;
+const uint16_t FLAG = 0xcafe;
 
 int timeline_init(timeline_t *tl, const world_parameters_t *params,
 		  const char *path, size_t max_size)
