@@ -13,7 +13,7 @@ def main():
 
         stdout, _ = p.communicate()
 
-        time_lines = stdout.decode().splitlines()[-7:-10]
+        time_lines = stdout.decode().splitlines()[-9:-6]
         times = [line.split(":")[1].replace("s", "").strip() for line in time_lines]
         init, sim, total = times
 
