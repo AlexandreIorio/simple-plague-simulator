@@ -1,4 +1,3 @@
-#include <cstdint>
 #include <stddef.h>
 #include <stdio.h>
 #include "world.h"
