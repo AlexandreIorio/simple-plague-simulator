@@ -14,6 +14,7 @@ int timeline_init(timeline_t *tl, const world_parameters_t *params,
 
 	tl->saved_rounds = 0;
 	tl->max_size = max_size;
+	tl->file_size = 0;
 	memcpy(&tl->params, params, sizeof(tl->params));
 
 	fwrite(&FLAG, sizeof(FLAG), 1, tl->fp);
