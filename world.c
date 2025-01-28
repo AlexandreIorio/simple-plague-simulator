@@ -42,17 +42,16 @@ int world_init(world_t *world, const world_parameters_t *p)
 {
 	int ret = world_init_common(world, p);
 
-    if (ret) {
-        return -1;
-    }
+	if (ret) {
+		return -1;
+	}
 
 	const size_t world_size = world_world_size(p);
 	if (!world_size) {
 		return -1;
 	}
 
-    const size_t people_to_spawn = world_size * p->populationPercent / 100;
-
+	const size_t people_to_spawn = world_size * p->populationPercent / 100;
 
 	if (!(people_to_spawn >= p->initialImmune + p->initialInfected)) {
 		return -1;
@@ -147,8 +146,7 @@ int world_init(world_t *world, const world_parameters_t *p)
 #ifdef _OPENMP
 	}
 #endif
-    return 0;
-
+	return 0;
 }
 
 bool world_should_infect(const world_t *p, size_t i, size_t j, int probability)
