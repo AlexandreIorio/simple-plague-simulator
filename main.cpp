@@ -253,7 +253,7 @@ int main(int argc, char *argv[])
 		<< "Proximity                   : " << params.proximity << "\n"
 		<< "Infection duration          : " << params.infectionDuration
 		<< " turns\n"
-		<< "Healty infection probability: "
+		<< "Healthy infection probability: "
 		<< params.healthyInfectionProbability << " % \n"
 		<< "Immune infection probability: "
 		<< params.immuneInfectionProbability << " % \n"
