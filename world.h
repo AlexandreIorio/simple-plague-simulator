@@ -15,14 +15,14 @@ typedef uint8_t state_t;
 typedef struct {
 	size_t height;
 	size_t width;
-	size_t population_percentage;
 	size_t initial_infected;
 	size_t initial_immune;
-	int32_t death_probability;
-	int32_t infection_duration;
-	int32_t healthy_infection_probability;
-	int32_t immune_infection_probability;
-	int32_t proximity;
+	size_t proximity;
+	uint8_t population_percentage;
+	uint8_t death_probability;
+	uint8_t infection_duration;
+	uint8_t healthy_infection_probability;
+	uint8_t immune_infection_probability;
 } world_parameters_t;
 
 typedef struct {
