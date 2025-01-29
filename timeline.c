@@ -51,6 +51,8 @@ timeline_error_t timeline_push_round(timeline_t *tl, uint8_t *grid)
 			count++;
 		}
 	}
+	fwrite(&count, sizeof(count), 1, tl->fp);
+	fwrite(&element, sizeof(element), 1, tl->fp);
 	++tl->saved_rounds;
 	return TL_OK;
 }
