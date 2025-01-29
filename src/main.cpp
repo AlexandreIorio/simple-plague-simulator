@@ -171,26 +171,7 @@ int main(int argc, char *argv[])
 	std::cout << "------------------------------------\n";
 	std::cout << "Parameters\n";
 	std::cout << "------------------------------------\n";
-	std::cout
-		<< "Population                  : "
-		<< params.population_percentage << " %\n"
-		<< "World height                : " << params.height << "\n"
-		<< "World Width                 : " << params.width << "\n"
-		<< "World size                  : "
-		<< params.height * params.width << "\n"
-		<< "Proximity                   : " << params.proximity << "\n"
-		<< "Infection duration          : " << params.infection_duration
-		<< " turns\n"
-		<< "Healthy infection probability:"
-		<< params.healthy_infection_probability << " % \n"
-		<< "Immune infection probability: "
-		<< params.immune_infection_probability << " % \n"
-		<< "Death probability           : " << params.death_probability
-		<< " %\n"
-		<< "Initial infected            : " << params.initial_infected
-		<< "\n"
-		<< "Population immunized        : " << params.initial_immune
-		<< " %\n";
+	world_print_params(&params);
 	std::cout << "\n";
 	std::cout << "-----------------------------------\n";
 	std::cout << "         Initialisation\n";

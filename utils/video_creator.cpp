@@ -66,28 +66,7 @@ int main(int argc, char **argv)
 	std::cout << "------------------------------------\n";
 	std::cout << "Parameters\n";
 	std::cout << "------------------------------------\n";
-	std::cout
-		<< "Population                  : "
-		<< tl.params.population_percentage << "%\n"
-		<< "World height                : " << tl.params.height << "\n"
-		<< "World Width                 : " << tl.params.width << "\n"
-		<< "World size                  : "
-		<< tl.params.height * tl.params.width << "\n"
-		<< "Proximity                   : " << tl.params.proximity
-		<< "\n"
-		<< "Infection duration          : "
-		<< tl.params.infection_duration << " turns\n"
-		<< "Healthy infection probability:"
-		<< tl.params.healthy_infection_probability << " % \n"
-		<< "Immune infection probability: "
-		<< tl.params.immune_infection_probability << " % \n"
-		<< "Death probability           : "
-		<< tl.params.death_probability << "%\n"
-		<< "Initial infected            : "
-		<< tl.params.initial_infected << "\n"
-		<< "Population immunized        : " << tl.params.initial_immune
-		<< "%\n"
-		<< "Number of Rounds            : " << tl.saved_rounds << '\n';
+	world_print_params(&tl.params);
 	std::cout << "\n";
 
 	uint8_t *grid = new uint8_t[tl.params.height * tl.params.width];
