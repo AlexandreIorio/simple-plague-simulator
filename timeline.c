@@ -58,11 +58,59 @@ timeline_error_t timeline_push_round(timeline_t *tl, uint8_t *grid)
 	return TL_OK;
 }
 
+timeline_error_t timeline_load(timeline_t *tl, const char *path)
+{
+	tl->fp = fopen(path, "rb");
+	if (!tl->fp) {
+		return TL_FAILED_TO_OPEN_FILE;
+	}
+	uint16_t flag;
+	fread(&flag, sizeof(flag), 1, tl->fp);
+	if (flag != FLAG) {
+		fclose(tl->fp);
+		return TL_INVALID_TIMELINE;
+	}
+	fread(&tl->saved_rounds, sizeof(tl->saved_rounds), 1, tl->fp);
+	fread(&tl->params, sizeof(tl->params), 1, tl->fp);
+	return TL_OK;
+}
+
+timeline_error_t timeline_get_round(timeline_t *tl, uint8_t *grid)
+{
+	const size_t grid_size = tl->params.worldWidth * tl->params.worldHeight;
+	size_t i = 0;
+	while (i < grid_size) {
+		uint8_t count;
+		uint8_t element;
+		size_t read = fread(&count, sizeof(count), 1, tl->fp);
+		if (read != 1) {
+			return TL_END;
+		}
+		read = fread(&element, sizeof(element), 1, tl->fp);
+		if (read != 1) {
+			return TL_END;
+		}
+		for (uint8_t j = 0; j < count; ++j) {
+			if (i >= grid_size) {
+				return TL_INVALID_TIMELINE;
+			}
+			grid[i++] = element;
+		}
+	}
+	return TL_OK;
+}
+
 timeline_error_t timeline_save(timeline_t *tl)
 {
 	fseek(tl->fp, 0, SEEK_SET);
 	fwrite(&FLAG, sizeof(FLAG), 1, tl->fp);
 	fwrite(&tl->saved_rounds, sizeof(tl->saved_rounds), 1, tl->fp);
+	timeline_close(tl);
+	return TL_OK;
+}
+
+timeline_error_t timeline_close(timeline_t *tl)
+{
 	fclose(tl->fp);
 	return TL_OK;
 }

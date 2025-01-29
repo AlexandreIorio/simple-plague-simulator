@@ -14,9 +14,11 @@ typedef struct {
 } timeline_t;
 
 typedef enum {
+	TL_INVALID_TIMELINE = -2,
 	TL_FAILED_TO_OPEN_FILE = -1,
 	TL_OK = 0,
 	TL_MAX_SIZE = 1,
+	TL_END
 } timeline_error_t;
 
 timeline_error_t timeline_init(timeline_t *tl, const world_parameters_t *params,
@@ -25,6 +27,12 @@ timeline_error_t timeline_init(timeline_t *tl, const world_parameters_t *params,
 timeline_error_t timeline_push_round(timeline_t *tl, uint8_t *grid);
 
 timeline_error_t timeline_save(timeline_t *tl);
+
+timeline_error_t timeline_load(timeline_t *tl, const char *path);
+
+timeline_error_t timeline_close(timeline_t *tl);
+
+timeline_error_t timeline_get_round(timeline_t *tl, uint8_t *grid);
 
 size_t timeline_expected_size(const world_parameters_t *params,
 			      size_t nb_rounds);
