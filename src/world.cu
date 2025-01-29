@@ -1,3 +1,4 @@
+#define __CUDACC__
 #ifdef __CUDACC__
 
 #include <iostream>
@@ -175,7 +176,7 @@ int world_init(world_t *world, const world_parameters_t *p)
 	checkCudaErrors(
 		cudaMalloc((void **)&d_state, world_size * sizeof(*d_state)));
 
-	world_init_random_generator<<<grid, block>>>(d_state, world_size,
+	world_init_random_generator<<<grid, block> > >(d_state, world_size,
 						       1337);
 	checkCudaErrors(cudaDeviceSynchronize());
 
@@ -200,7 +201,7 @@ int world_init(world_t *world, const world_parameters_t *p)
 
 	const size_t people_to_spawn = world_initial_population(p);
 
-	init_population_kernel<<<grid, block>>>(d_grid, d_p, people_to_spawn,
+	init_population_kernel<<<grid, block> > >(d_grid, d_p, people_to_spawn,
 						  d_state, d_occupation_buffer);
 
 	checkCudaErrors(cudaDeviceSynchronize());
@@ -292,7 +293,7 @@ void world_update(world_t *p, void *raw)
 	dim3 block(CUDA_BLOCK_DIM_X, CUDA_BLOCK_DIM_Y);
 	dim3 grid((p->params.width + block.x - 1) / block.x,
 		  (p->params.height + block.y - 1) / block.y);
-	world_update_k<<<grid, block>>>(cuda_prepare.d_world,
+	world_update_k<<<grid, block> > >(cuda_prepare.d_world,
 
 					  cuda_prepare.d_tmp_grid);
 

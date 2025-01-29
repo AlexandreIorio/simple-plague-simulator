@@ -1,13 +1,12 @@
 CC = gcc
 CXX = g++
-CFLAGS = -O3 -Wall `pkg-config --cflags opencv4` 
-SRC_DIR = src
+CFLAGS = -O3 -Wall `pkg-config --cflags opencv4` -Iinclude
 BUILD_DIR = build/video_creator
 
 OBJS = $(BUILD_DIR)/timeline.o \
        $(BUILD_DIR)/video_creator.o
 
-TARGET = $(BUILD_DIR)/app
+TARGET = generate-video
 
 $(TARGET): $(OBJS)
 	@mkdir -p $(BUILD_DIR)
@@ -22,4 +21,4 @@ $(BUILD_DIR)/%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR) $(TARGET)

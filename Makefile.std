@@ -1,6 +1,6 @@
 CC = gcc
 CXX = g++
-CFLAGS = -O2 -Wall
+CFLAGS = -O2 -Wall -Iinclude
 SRC_DIR = src
 BUILD_DIR = build/std
 
@@ -10,19 +10,19 @@ OBJS = $(BUILD_DIR)/world.o \
        $(BUILD_DIR)/timeline.o \
        $(BUILD_DIR)/main.o
 
-TARGET = $(BUILD_DIR)/app
+TARGET = plague-simulator-std
 
 $(TARGET): $(OBJS)
 	@mkdir -p $(BUILD_DIR)
 	$(CXX) $(CFLAGS) -o $@ $^
 
-$(BUILD_DIR)/%.o: %.cpp
-	@mkdir -p $(BUILD_DIR)
-	$(CXX) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/%.o: %.c
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) $(CFLAGS) -c $< -o $@
+
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR) $(TARGET)

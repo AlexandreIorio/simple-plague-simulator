@@ -1,25 +1,30 @@
 CC = gcc
 CXX = g++
-CFLAGS = -g -O0 -Wall `sdl2-config --cflags`
+CFLAGS = -g -O0 -Wall `sdl2-config --cflags` -Iinclude
 SRC_DIR = src
+UTILS_DIR = utils
 BUILD_DIR = build/timeline_display
 
 OBJS = $(BUILD_DIR)/timeline.o \
        $(BUILD_DIR)/timeline_display.o
 
-TARGET = $(BUILD_DIR)/app
+TARGET = display-timeline
 
 $(TARGET): $(OBJS)
 	@mkdir -p $(BUILD_DIR)
 	$(CXX) $(CFLAGS) -o $@ $^
 
-$(BUILD_DIR)/%.o: %.cpp
-	@mkdir -p $(BUILD_DIR)
-	$(CXX) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/%.o: %.c
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/%.o: $(UTILS_DIR)/%.cpp
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) $(CFLAGS) -c $< -o $@
+
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR) $(TARGET)
