@@ -1,4 +1,4 @@
-.PHONY: all std omp cuda clean display_timeline generate_video
+.PHONY: all std omp cuda clean display_timeline generate_video timeline_details
 
 all: std omp cuda
 
@@ -17,9 +17,13 @@ display_timeline:
 generate_video:
 	$(MAKE) -f Makefile.video
 
+timeline_details:
+	$(MAKE) -f Makefile.details
+
 clean:
 	$(MAKE) -f Makefile.std clean
 	$(MAKE) -f Makefile.omp clean
 	$(MAKE) -f Makefile.cuda clean
 	$(MAKE) -f Makefile.display clean
 	$(MAKE) -f Makefile.video clean
+	$(MAKE) -f Makefile.details clean

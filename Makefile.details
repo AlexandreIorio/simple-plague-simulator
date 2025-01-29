@@ -1,0 +1,28 @@
+CC = gcc
+CXX = g++
+CFLAGS = -O3 -Wall -Iinclude
+SRC_DIR = src
+UTILS_DIR = utils
+BUILD_DIR = build/details
+
+OBJS = $(BUILD_DIR)/timeline.o \
+       $(BUILD_DIR)/world_common.o \
+       $(BUILD_DIR)/world_priv.o \
+       $(BUILD_DIR)/timeline_details.o
+
+TARGET = timeline-details
+
+$(TARGET): $(OBJS)
+	@mkdir -p $(BUILD_DIR)
+	$(CXX) $(CFLAGS) -o $@ $^
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/%.o: $(UTILS_DIR)/%.c
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	rm -rf $(BUILD_DIR) $(TARGET)
