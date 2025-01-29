@@ -1,6 +1,6 @@
 CC = gcc
 CXX = g++
-CFLAGS = -g -O0 -Wall
+CFLAGS = -g -O0 -Wall `sdl2-config --cflags`
 SRC_DIR = src
 BUILD_DIR = build/timeline_display
 
