@@ -86,8 +86,11 @@ int world_init(world_t *world, const world_parameters_t *p)
 	const size_t people_to_spawn_per_thread = people_to_spawn / max_threads;
 	const size_t people_to_spawn_on_last_thread =
 		people_to_spawn % max_threads;
-	const size_t chunk_per_thread = world_size / max_threads;
-	const size_t last_thread_chunk = world_size % max_threads;
+	const size_t chunk_per_thread =
+		people_to_spawn_per_thread > 0 ? world_size / max_threads : 0;
+	const size_t last_thread_chunk = people_to_spawn_per_thread > 0 ?
+						 world_size % max_threads :
+						 world_size;
 
 #pragma omp parallel
 	{
