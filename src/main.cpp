@@ -106,8 +106,8 @@ int main(int argc, char *argv[])
 {
 	size_t total_rounds = 0;
 	world_parameters_t params = {
-		.height = 10,
-		.width = 10,
+		.height = 256,
+		.width = 256,
 		.initial_infected = 1,
 		.initial_immune = 0,
 		.proximity = 2,
@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
 		.death_probability = 10,
 		.infection_duration = 5,
 		.healthy_infection_probability = 10,
-		.immune_infection_probability = 10,
+		.immune_infection_probability = 1,
 	};
 
 	const struct option long_opts[] = {
