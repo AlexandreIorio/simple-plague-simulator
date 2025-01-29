@@ -11,7 +11,7 @@ TARGET = $(BUILD_DIR)/app
 
 $(TARGET): $(OBJS)
 	@mkdir -p $(BUILD_DIR)
-	$(CXX) $(CFLAGS) `sdl2-config --cflags --libs` -o $@ $^
+	$(CXX) $(CFLAGS) -o $@ $^
 
 $(BUILD_DIR)/%.o: %.cpp
 	@mkdir -p $(BUILD_DIR)
