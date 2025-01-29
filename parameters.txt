@@ -1,9 +1,10 @@
-population 50
-healthy_infection_probability 10
-immune_infection_probability 1
-death_probability 10
+height 10
+width 10
 initial_infected 1
 initial_immune 0
 proximity 2
-world_height 256
-world_width 256
+population_percentage 50
+death_probability 10
+infection_duration 5
+healthy_infection_probability 10
+immune_infection_probability 10
