@@ -1,6 +1,6 @@
 import subprocess
 
-TARGETS = ["std", "openmp", "cuda"]
+TARGETS = ["std", "omp", "cuda"]
 
 WIDTH = [int(2**i) for i in range(2, 14)]
 HEIGHT = [int(2**i) for i in range(2, 14)]
@@ -28,7 +28,7 @@ def main():
         for width, height in zip(WIDTH, HEIGHT):
             p = subprocess.Popen(
                 [
-                    f"build/{target}/app",
+                    f"plague-simulator-{target}",
                     "-f",
                     BENCHMARK_FILE_PATH,
                     "-r",
