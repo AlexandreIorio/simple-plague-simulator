@@ -65,13 +65,22 @@ timeline_error_t timeline_load(timeline_t *tl, const char *path)
 		return TL_FAILED_TO_OPEN_FILE;
 	}
 	uint16_t flag;
-	fread(&flag, sizeof(flag), 1, tl->fp);
-	if (flag != FLAG) {
+
+	size_t read = fread(&flag, sizeof(flag), 1, tl->fp);
+	if (read != 1 || flag != FLAG) {
 		fclose(tl->fp);
 		return TL_INVALID_TIMELINE;
 	}
-	fread(&tl->saved_rounds, sizeof(tl->saved_rounds), 1, tl->fp);
-	fread(&tl->params, sizeof(tl->params), 1, tl->fp);
+	read = fread(&tl->saved_rounds, sizeof(tl->saved_rounds), 1, tl->fp);
+	if (read != 1) {
+		fclose(tl->fp);
+		return TL_INVALID_TIMELINE;
+	}
+	read = fread(&tl->params, sizeof(tl->params), 1, tl->fp);
+	if (read != 1) {
+		fclose(tl->fp);
+		return TL_INVALID_TIMELINE;
+	}
 	return TL_OK;
 }
 
