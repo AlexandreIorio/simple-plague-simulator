@@ -6,6 +6,8 @@ UTILS_DIR = utils
 BUILD_DIR = build/timeline_display
 
 OBJS = $(BUILD_DIR)/timeline.o \
+       $(BUILD_DIR)/world_common.o \
+       $(BUILD_DIR)/world_priv.o \
        $(BUILD_DIR)/timeline_display.o
 
 TARGET = display-timeline

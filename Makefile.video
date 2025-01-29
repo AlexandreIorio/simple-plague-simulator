@@ -6,6 +6,8 @@ UTILS_DIR = utils
 SRC_DIR = src
 
 OBJS = $(BUILD_DIR)/timeline.o \
+       $(BUILD_DIR)/world_common.o \
+       $(BUILD_DIR)/world_priv.o \
        $(BUILD_DIR)/video_creator.o
 
 TARGET = generate-video
