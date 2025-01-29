@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 		.initialInfected = 1,
 		.initialImmune = 0,
 		.deathProbability = 10,
-		.infectionDuration = 10,
+		.infectionDuration = 5,
 		.healthyInfectionProbability = 10,
 		.immuneInfectionProbability = 10,
 		.proximity = 2,
