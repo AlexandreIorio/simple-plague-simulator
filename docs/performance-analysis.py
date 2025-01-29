@@ -144,18 +144,33 @@ def create_zoomed_performance_plots(df):
         'cuda': 'red'
     }
     
-    max_grid_size = 1025 * 1025  # Maximum grid size for zoomed view
+    # Define grid size range
+    min_grid_size = 0
+    max_grid_size = 8192 * 8192# 4096 x 4096
     
     fig, axes = plt.subplots(2, 2, figsize=(15, 12))
-    fig.suptitle('Zoomed Performance Analysis (0x0 to 1025x1025) - All Implementations', fontsize=16)
+    fig.suptitle('Zoomed Performance Analysis 8192 x 8192 on range 0 to 2500 x 2500 - All Implementations', fontsize=16)
     axes = axes.ravel()
     
     for idx, (metric, title) in enumerate(metrics.items()):
         y_position = 0.95
         
+        # Calculate y-axis limits for this metric
+        filtered_df = df[df['grid_size'].between(min_grid_size, max_grid_size)]
+        y_min = filtered_df[metric].min()
+        y_max = filtered_df[metric].max()
+        y_range = y_max - y_min
+        
+        # Add 10% padding to y-axis
+        y_min = y_min - (y_range * 0.1)
+        y_max = y_max + (y_range * 0.1)
+        
         for implementation, color in colors.items():
             impl_data = df[df['target'] == implementation]
-            impl_data = impl_data[impl_data['grid_size'] <= max_grid_size]
+            impl_data = impl_data[
+                (impl_data['grid_size'] >= min_grid_size) & 
+                (impl_data['grid_size'] <= max_grid_size)
+            ]
             
             if impl_data.empty:
                 continue
@@ -175,7 +190,7 @@ def create_zoomed_performance_plots(df):
             
             if len(x) > 1:  # Only calculate regression if we have enough data points
                 slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
-                line_x = pd.Series([x.min(), x.max()])
+                line_x = pd.Series([min_grid_size, max_grid_size])
                 line_y = slope * line_x + intercept
                 axes[idx].plot(line_x, line_y, color=color, linestyle='--', 
                              label=f'{implementation} regression')
@@ -193,13 +208,18 @@ def create_zoomed_performance_plots(df):
         def format_func(value, tick_number):
             if value <= 0:
                 return '0x0'
-            if pd.isna(value):  # Using pandas isna instead of numpy isnan
+            if pd.isna(value):
                 return '0x0'
             side = int(np.sqrt(value))
             return f'{side}x{side}'
         
         axes[idx].xaxis.set_major_formatter(plt.FuncFormatter(format_func))
         axes[idx].xaxis.set_major_locator(plt.MaxNLocator(5))
+        
+        # Set axes limits
+        axes[idx].set_xlim(min_grid_size, 2500 * 2500)
+        div = 15
+        axes[idx].set_ylim(y_min / div, y_max / div)
     
     plt.tight_layout()
     plt.savefig('performance_analysis_zoomed.svg', dpi=300, bbox_inches='tight', format='svg')
@@ -207,8 +227,8 @@ def create_zoomed_performance_plots(df):
 
 def main():
     df = load_and_prepare_data('benchmark_result.csv')
-    create_performance_plots(df)
-    create_combined_performance_plots(df)
+    # create_performance_plots(df)
+    # create_combined_performance_plots(df)
     create_zoomed_performance_plots(df)
 
 if __name__ == "__main__":
