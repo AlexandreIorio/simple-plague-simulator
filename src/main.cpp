@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 
 	// args parsing
 	int opt;
-	while ((opt = getopt_long(argc, argv, "f:g:r", long_opts, nullptr)) !=
+	while ((opt = getopt_long(argc, argv, "f:g:r:", long_opts, nullptr)) !=
 	       -1) {
 		switch (opt) {
 		case 'r':
