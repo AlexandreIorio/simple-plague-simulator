@@ -128,14 +128,14 @@ int main(int argc, char *argv[])
 	world_parameters_t params = {
 		.height = 10,
 		.width = 10,
-		.population_percentage = 50,
 		.initial_infected = 1,
 		.initial_immune = 0,
+		.proximity = 2,
+		.population_percentage = 50,
 		.death_probability = 10,
 		.infection_duration = 5,
 		.healthy_infection_probability = 10,
 		.immune_infection_probability = 10,
-		.proximity = 2,
 	};
 
 	const char *shortOptions = "p:e:n:d:r:i:m:y:h:w:f:g";
