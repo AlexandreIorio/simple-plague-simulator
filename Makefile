@@ -1,6 +1,6 @@
 .PHONY: all std omp cuda clean
 
-all: std omp cuda timeline_display
+all: std omp cuda
 
 std:
 	$(MAKE) -f Makefile.std
