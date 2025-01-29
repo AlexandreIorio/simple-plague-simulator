@@ -39,7 +39,7 @@ Date : **29.01.2025**
 
 ## <center>Table des matières {ignore=true}
 
-<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=3 orderedList=false} -->
+<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=4 orderedList=false} -->
 
 <!-- code_chunk_output -->
 
@@ -49,10 +49,17 @@ Date : **29.01.2025**
 - [3. Analyse des performances de l'applicaton](#3-analyse-des-performances-de-lapplicaton)
 - [4. Identification des goulets d'étranglement](#4-identification-des-goulets-détranglement)
   - [4.1 Détermination du nombre de cellules à vérifier](#41-détermination-du-nombre-de-cellules-à-vérifier)
+    - [4.1.1 Cellule Healthy et Immune](#411-cellule-healthy-et-immune)
+    - [4.1.2 Cellule Infected, Dead et Empty](#412-cellule-infected-dead-et-empty)
   - [4.2 Détermination du nombre de cellules à initialiser](#42-détermination-du-nombre-de-cellules-à-initialiser)
   - [4.3 Nombre total d'opérations](#43-nombre-total-dopérations)
   - [4.4 Solution pour accélérer l'application](#44-solution-pour-accélérer-lapplication)
+    - [4.4.1 Parallélisation avec OpenMP](#441-parallélisation-avec-openmp)
+    - [4.4.2 Parallélisation avec Cuda](#442-parallélisation-avec-cuda)
   - [4.5 Comparaison des performances](#45-comparaison-des-performances)
+    - [4.5.1 OpenMP](#451-openmp)
+    - [4.5.2 Cuda](#452-cuda)
+    - [4.5.3 Comparaison entre les versions](#453-comparaison-entre-les-versions)
 - [5. Identification des améliorations possibles](#5-identification-des-améliorations-possibles)
 - [6. Conclusion](#6-conclusion)
 
@@ -412,20 +419,20 @@ Afin de bien se rendre compte des vitesse d'éxécution, voici un tableau compar
 
 `targetA - targetB`
 
-| grid_size   |   OpenMP - STD |   CUDA - STD |   CUDA - OpenMP |
-|:------------|---------------:|-------------:|----------------:|
-| 4x4         |          0.001 |        0.005 |           0.004 |
-| 8x8         |          0.001 |        0.007 |           0.006 |
-| 16x16       |          0.015 |        0.008 |          -0.008 |
-| 32x32       |          0.008 |        0.014 |           0.005 |
-| 64x64       |          0.003 |        0.046 |           0.044 |
-| 128x128     |         -0.038 |        0.014 |           0.051 |
-| 256x256     |         -0.153 |       -0.145 |           0.009 |
-| 512x512     |         -0.603 |       -0.833 |          -0.230 |
-| 1024x1024   |         -2.476 |       -3.479 |          -1.003 |
-| 2048x2048   |        -12.117 |      -13.505 |          -1.388 |
-| 4096x4096   |        -50.345 |      -57.126 |          -6.781 |
-| 8192x8192   |       -201.829 |     -230.053 |         -28.
+| grid_size | OpenMP - STD | CUDA - STD | CUDA - OpenMP |
+| :-------- | -----------: | ---------: | ------------: |
+| 4x4       |        0.001 |      0.005 |         0.004 |
+| 8x8       |        0.001 |      0.007 |         0.006 |
+| 16x16     |        0.015 |      0.008 |        -0.008 |
+| 32x32     |        0.008 |      0.014 |         0.005 |
+| 64x64     |        0.003 |      0.046 |         0.044 |
+| 128x128   |       -0.038 |      0.014 |         0.051 |
+| 256x256   |       -0.153 |     -0.145 |         0.009 |
+| 512x512   |       -0.603 |     -0.833 |        -0.230 |
+| 1024x1024 |       -2.476 |     -3.479 |        -1.003 |
+| 2048x2048 |      -12.117 |    -13.505 |        -1.388 |
+| 4096x4096 |      -50.345 |    -57.126 |        -6.781 |
+| 8192x8192 |     -201.829 |   -230.053 |       -28.224 |
 
 
 **Ratio de vitesse**
@@ -531,7 +538,10 @@ Afin de bien se rendre compte des vitesse d'éxécution, voici un tableau compar
 
 ## 5. Identification des améliorations possibles
 
-//TODO
+Nous avons decidé, à chaque fois, de paralleliser la totalité de l'application avec `OpenMP` et `Cuda`. Cependant, après analyse, ont pourrait améliorer en sélectionnant la technologies 
+en fonction de la taille de la `grid`.
+
+Avec `Cuda` une optimisation qui accélérerait encore plus l'application ce serait d'utiliser la technique de `stencil` pour la simulation. En effet, pour chaque cellule, nous devons vérifier les voisins. En utilisant cette technique, on diminurait le nombre d'accès à la mémoire globale de la `GPU` et donc augmenterait les performances.
 
 ## 6. Conclusion
 
