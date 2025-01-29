@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 			if (!write_parameters_to_file(filename, &params)) {
 				return 1;
 			}
-			exit(0);
+			return 0;
 		}
 		case '?':
 		case ':':
