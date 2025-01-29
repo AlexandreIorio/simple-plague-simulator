@@ -50,6 +50,11 @@ Date : **29.01.2025**
 - [4. Identification des goulets d'étranglement](#4-identification-des-goulets-détranglement)
   - [4.1 Détermination du nombre de cellules à vérifier](#41-détermination-du-nombre-de-cellules-à-vérifier)
   - [4.2 Détermination du nombre de cellules à initialiser](#42-détermination-du-nombre-de-cellules-à-initialiser)
+  - [4.3 Nombre total d'opérations](#43-nombre-total-dopérations)
+  - [4.4 Solution pour accélérer l'application](#44-solution-pour-accélérer-lapplication)
+  - [4.5 Comparaison des performances](#45-comparaison-des-performances)
+- [5. Identification des améliorations possibles](#5-identification-des-améliorations-possibles)
+- [6. Conclusion](#6-conclusion)
 
 <!-- /code_chunk_output -->
 
@@ -181,9 +186,7 @@ Dans un premier temps, nous avons tenté de mesurer les performances de l'applic
 Voici un graphique représentant le temps d'éxécution de la simulation en fonction de la taille de la grille:
 ![plot](performance_analysis_std.svg)
 
-**Analyse**
-
-Sur ce graphique, nous remarquons que le temps d'éxécution de la simulation augmente de manière linéaire avec un `R²` de `1` pour le temps de simulation, le temps par tour et le temps total. Quant à l'initialisation, le `R²` est de `0.995` ce qui signifie que le temps d'initialisation et moins prévisible mais reste relativement linéaire. Le compilateur semble optimiser le code pour les tailles de grille plus petites.
+**Analyse**: Sur ce graphique, nous remarquons que le temps d'éxécution de la simulation augmente de manière linéaire avec un `R²` de `1` pour le temps de simulation, le temps par tour et le temps total. Quant à l'initialisation, le `R²` est de `0.995` ce qui signifie que le temps d'initialisation et moins prévisible mais reste relativement linéaire. Le compilateur semble optimiser le code pour les tailles de grille plus petites.
 
 ## 4. Identification des goulets d'étranglement
 En fonction de l'état de la cellule, le principe de l'application est de verifier les voisins de chaque avec un `radius` qui est representé par le paramêtre `proximity`. 
@@ -263,8 +266,273 @@ $$ Grid_{size} = 1024 * 1024 = 1'048'576 $$
 $$ ... $$
 $$ Grid_{size} = 4096 * 4096 = 16'777'216 $$
 
+En augmentant la taille de la `grid`, le nombre de cellules à initialiser augmente linéairement par dimension et au carré pour la `grid`.
+
+### 4.3 Nombre total d'opérations
+
+//TODO
+
+### 4.4 Solution pour accélérer l'application
+
+Afin de paralléliser l'application, nous avons immaginé la solution suivante. 
+Celle de passer une cellule ou un groupe de cellules de la `grid` à chaque thread.
+
+#### 4.4.1 Parallélisation avec OpenMP
+
+Notre première approche a été celle de paralléliser l'application avec `OpenMP`. 
+
+De cette manière. nous pouvons remettre la charge de travail sur plusieurs coeurs de la `CPU`. 
+
+Chaque thread va allors s'ocucper d'une partie de la `grid` pour les différentes tâches à effectuer.
+
+##### 4.4.1.1 Initialisation
+
+
+Pour l'initialisation, nous divisons la `grid` en `nb_chunk` parties de manière à initialiser sans conflit les cellules de la `grid`.
+
+Voici in exemple pour `nb_chunk = 4`
+
+![openmp](openmp_init.png)
+
+De cette manière, les `threads` initialisent les cellules de la `grid` sans conflit.
+
+
+##### 4.4.1.2 Simulation
+
+//TODO
+
+#### 4.4.2 Parallélisation avec Cuda
+
+Notre deuxième approche a été celle de paralléliser l'application avec `Cuda`.
+Cette approche différente de la première, nous permet de paralléliser l'application sur le `GPU`. Ainsi, comme nous avons un très grand nombre de `threads` sur le `GPU`, nous pouvons affecter un thread par cellule de la `grid`.
+
+De cette manière, un thread fera un nombre de vérifications maximum de $ Cells_{neighbours} = (2 * proximity + 1)² $
+ pour les cellules `HEALTHY` et `IMMUNE` et un nombre de vérification de `1` pour les cellules `INFECTED`, `DEAD` et `EMPTY`.
+
+##### 4.4.2.1 Initialisation
+
+L'initialisation avec `Cuda` est plus complexe que celle avec `OpenMP`. En effet, pour attribuer des cellules de manières aléatoires, nous devons utiliser une grille d'occupation. de cette manière, quand un thread veut ecrire sur une cellule, il peut verifier si la cellule est déjà occupée ou non, et si elle ne l'est pas, il peut l'occuper, et ce, de manière `atomique`.
+
+##### 4.4.2.2 Simulation
+
+Pour la simulation, la methode utilisée avec `Cuda` est bien plus simple, chaque thread va verifier les voisins de la cellule qu'il occupe et effectuer les actions necessaires, modifier un tableau temporaire et ensuite copier le tableau temporaire dans le tableau principal.
+
+### 4.5 Comparaison des performances
+
+#### 4.5.1 OpenMP
+
+Maintenant que la solution est implémentée, voyons les performances de l'application parallélisée avec `OpenMP` grace à un graphique suivant:
+
+![plot](performance_analysis_openmp.svg)
+
+**Analyse**: Sur ce graphique, nous remarquons que le temps augmente de façon linéaire. Avec un `R²` de `~1` pour tous les parties de a simulation, on voit que le temps de simulation total est prévisible. La durée quant à elle nettement améliorée quant à la version [`CPU` standard](#3-analyse-des-performances-de-lapplicaton).
+
+
+
+On remarque très clairement que le temps d'initialisation avec `OpenMP` est plus élevé que sur la version `CPU` standard. Cela est dû au fait que `OpenMP` doit initialiser les `threads` et les `chunk` de la `grid` avant de pouvoir commencer l'initialisation.
+
+Bien que la tendance est à la baisse, l'initialisation par `OpenMP` n'est pas une bonne solution. On remarque que pour une taille de `8192 x 8192`, le temps d'initialisation est plus long de ~59% par rapport à la version `CPU` standard. Si on pouvait suivre la tendance, on aurait une grid de dimensions bien trop élevée pour une execution sur une `Jetson Nano`.
+
+En revanche, le temps de simulation augmente très rapidement avec la dimension de la `grid`. Quant bien même, pour une grid de `64 x 64` le temps est moins élevé, une `grid` de `8192 x 8192` est 460% plus rapide que la version `CPU` standard. 
+
+Cette tendance est la même pour le temps par tour. 
+
+Quant au temps total, il est fortement pégoré par le temps d'initialisation.
+
+#### 4.5.2 Cuda
+
+La solution implémentée avec `Cuda` aussi très performante. Voici un graphique représentant les performances de l'application parallélisée avec `Cuda`:
+
+![plot](performance_analysis_cuda.svg)
+
+**Analyse** : Pour une même `grid` de `8192 x 8192`, le temps total est drastiquement réduit. 
+Le temps de simulation est tout aussi estimable avec un `R²` très proche de `1`.
+
+Voici une comparision des performances entre la version `CPU` standard, OpenMP et la version `Cuda`:
+
+
+#### 4.5.3 Comparaison entre les versions
+
+Afin de nous rentre compte des performances de chaque version, voici un graphique superposant les trois versions:
+
+![plot](performance_analysis_combined.svg)
+
+On remarque bien les performances de chaque version. La version `Cuda` est la plus performante, suivie de la version `OpenMP` et enfin la version `CPU` standard.
+
+Cependant, lorsque l'on zoom sur les performances avec des petites `grid`, on se rend compte que les processus d'initialisation est fortement impacté. 
+
+![plot](performance_analysis_zoomed.svg)
+
+La version `Cuda` est alors la plus défavorables. Cela est du à la copie des données entre la `CPU` et le `GPU`. En effet, pour des petites `grid`, le temps de copie est plus long que le temps d'éxécution de la simulation. Alors que pour des `grid`dans les alentours de `800 x 800`, la version `Cuda`devient plus performante que la version `OpenMP`. Cuda rejoindra les performances de la version `CPU` standard pour des `grid` dans les alentours de `4000 x 4000`.
+
+Afin de bien se rendre compte des vitesse d'éxécution, voici un tableau comparatif des `grid` allant de `4 x 4` à `8192 x 8192`:
+
+##### 4.5.3.1 Comparaison des temps d'initialisation
+
+**Différences absolues (secondes)**
+`targetA - targetB`
+
+| grid_size   |   OpenMP - STD |   CUDA - STD |   CUDA - OpenMP |
+|:------------|---------------:|-------------:|----------------:|
+| 4x4         |          0.000 |        0.123 |           0.123 |
+| 8x8         |          0.000 |        0.069 |           0.068 |
+| 16x16       |          0.000 |        0.066 |           0.065 |
+| 32x32       |          0.001 |        0.067 |           0.067 |
+| 64x64       |          0.001 |        0.068 |           0.066 |
+| 128x128     |          0.004 |        0.067 |           0.062 |
+| 256x256     |          0.015 |        0.071 |           0.056 |
+| 512x512     |          0.055 |        0.114 |           0.058 |
+| 1024x1024   |          0.226 |        0.178 |          -0.048 |
+| 2048x2048   |          1.024 |        0.477 |          -0.547 |
+| 4096x4096   |          5.592 |       -0.113 |          -5.705 |
+| 8192x8192   |         21.759 |       -2.790 |         -24.549 |
+
+**Ratio de vitesse**
+
+`TargetA VS TargetB` veut dire que `TargetA` est `x` fois plus rapide que `TargetB`
+
+| grid_size   | OpenMP vs STD   | CUDA vs STD   | CUDA vs OpenMP   |
+|:------------|:----------------|:--------------|:-----------------|
+| 4x4         | 0.02x           | 0.00x         | 0.00x            |
+| 8x8         | 0.03x           | 0.00x         | 0.00x            |
+| 16x16       | 0.02x           | 0.00x         | 0.01x            |
+| 32x32       | 0.05x           | 0.00x         | 0.01x            |
+| 64x64       | 0.08x           | 0.00x         | 0.02x            |
+| 128x128     | 0.08x           | 0.01x         | 0.07x            |
+| 256x256     | 0.10x           | 0.02x         | 0.23x            |
+| 512x512     | 0.12x           | 0.06x         | 0.52x            |
+| 1024x1024   | 0.14x           | 0.17x         | 1.22x            |
+| 2048x2048   | 0.18x           | 0.33x         | 1.77x            |
+| 4096x4096   | 0.34x           | 1.04x         | 3.10x            |
+| 8192x8192   | 0.40x           | 1.24x         | 3.07x            |
+
+##### 4.5.3.2 Comparaison des temps de simulation
+
+**Différences absolues (secondes)**
+
+`targetA - targetB`
+
+| grid_size   |   OpenMP - STD |   CUDA - STD |   CUDA - OpenMP |
+|:------------|---------------:|-------------:|----------------:|
+| 4x4         |          0.001 |        0.005 |           0.004 |
+| 8x8         |          0.001 |        0.007 |           0.006 |
+| 16x16       |          0.015 |        0.008 |          -0.008 |
+| 32x32       |          0.008 |        0.014 |           0.005 |
+| 64x64       |          0.003 |        0.046 |           0.044 |
+| 128x128     |         -0.038 |        0.014 |           0.051 |
+| 256x256     |         -0.153 |       -0.145 |           0.009 |
+| 512x512     |         -0.603 |       -0.833 |          -0.230 |
+| 1024x1024   |         -2.476 |       -3.479 |          -1.003 |
+| 2048x2048   |        -12.117 |      -13.505 |          -1.388 |
+| 4096x4096   |        -50.345 |      -57.126 |          -6.781 |
+| 8192x8192   |       -201.829 |     -230.053 |         -28.
+
+
+**Ratio de vitesse**
+
+`TargetA VS TargetB` veut dire que `TargetA` est `x` fois plus rapide que `TargetB`
+
+| grid_size   | OpenMP vs STD   | CUDA vs STD   | CUDA vs OpenMP   |
+|:------------|:----------------|:--------------|:-----------------|
+| 4x4         | 0.01x           | 0.00x         | 0.24x            |
+| 8x8         | 0.09x           | 0.01x         | 0.15x            |
+| 16x16       | 0.05x           | 0.09x         | 1.90x            |
+| 32x32       | 0.23x           | 0.15x         | 0.67x            |
+| 64x64       | 0.85x           | 0.24x         | 0.29x            |
+| 128x128     | 2.72x           | 0.81x         | 0.30x            |
+| 256x256     | 2.80x           | 2.54x         | 0.91x            |
+| 512x512     | 2.68x           | 7.49x         | 2.80x            |
+| 1024x1024   | 2.81x           | 10.59x        | 3.76x            |
+| 2048x2048   | 4.82x           | 8.56x         | 1.78x            |
+| 4096x4096   | 5.67x           | 15.32x        | 2.70x            |
+| 8192x8192   | 5.61x           | 15.78x        | 2.81x            |
+
+##### 4.5.3.3 Comparaison des temps par tours
+
+**Différences absolues (secondes)**
+`targetA - targetB`
+
+| grid_size   |   OpenMP - STD |   CUDA - STD |   CUDA - OpenMP |
+|:------------|---------------:|-------------:|----------------:|
+| 4x4         |          0.000 |        0.000 |           0.000 |
+| 8x8         |          0.000 |        0.000 |           0.000 |
+| 16x16       |          0.000 |        0.000 |          -0.000 |
+| 32x32       |          0.000 |        0.000 |           0.000 |
+| 64x64       |          0.000 |        0.000 |           0.000 |
+| 128x128     |         -0.000 |        0.000 |           0.001 |
+| 256x256     |         -0.002 |       -0.001 |           0.000 |
+| 512x512     |         -0.006 |       -0.008 |          -0.002 |
+| 1024x1024   |         -0.025 |       -0.035 |          -0.010 |
+| 2048x2048   |         -0.121 |       -0.135 |          -0.014 |
+| 4096x4096   |         -0.503 |       -0.571 |          -0.068 |
+| 8192x8192   |         -2.018 |       -2.301 |          -0.282 |
+
+**Ratio de vitesse**
+
+`TargetA VS TargetB` veut dire que `TargetA` est `x` fois plus rapide que `TargetB`
+
+| grid_size   | OpenMP vs STD   | CUDA vs STD   | CUDA vs OpenMP   |
+|:------------|:----------------|:--------------|:-----------------|
+| 4x4         | 0.03x           | 0.01x         | 0.25x            |
+| 8x8         | 0.13x           | 0.02x         | 0.15x            |
+| 16x16       | 0.06x           | 0.07x         | 1.25x            |
+| 32x32       | 0.34x           | 0.22x         | 0.67x            |
+| 64x64       | 0.85x           | 0.24x         | 0.29x            |
+| 128x128     | 2.72x           | 0.81x         | 0.30x            |
+| 256x256     | 2.80x           | 2.54x         | 0.91x            |
+| 512x512     | 2.68x           | 7.49x         | 2.80x            |
+| 1024x1024   | 2.81x           | 10.59x        | 3.76x            |
+| 2048x2048   | 4.82x           | 8.56x         | 1.78x            |
+| 4096x4096   | 5.67x           | 15.32x        | 2.70x            |
+| 8192x8192   | 5.61x           | 15.78x        | 2.81x            |
+
+##### 4.5.3.4 Comparaison des temps totaux
+
+**Différences absolues (secondes)**
+
+`targetA - targetB`
+
+| grid_size   |   OpenMP - STD |   CUDA - STD |   CUDA - OpenMP |
+|:------------|---------------:|-------------:|----------------:|
+| 4x4         |          0.001 |        0.128 |           0.126 |
+| 8x8         |          0.001 |        0.075 |           0.074 |
+| 16x16       |          0.016 |        0.074 |           0.058 |
+| 32x32       |          0.009 |        0.081 |           0.072 |
+| 64x64       |          0.004 |        0.114 |           0.110 |
+| 128x128     |         -0.033 |        0.081 |           0.114 |
+| 256x256     |         -0.138 |       -0.073 |           0.065 |
+| 512x512     |         -0.547 |       -0.719 |          -0.172 |
+| 1024x1024   |         -2.250 |       -3.301 |          -1.051 |
+| 2048x2048   |        -11.093 |      -13.028 |          -1.935 |
+| 4096x4096   |        -44.752 |      -57.239 |         -12.486 |
+| 8192x8192   |       -180.071 |     -232.843 |         -52.773 |
+
+**Ratio de vitesse**
+
+`TargetA VS TargetB` veut dire que `TargetA` est `x` fois plus rapide que `TargetB`
+
+| grid_size   | OpenMP vs STD   | CUDA vs STD   | CUDA vs OpenMP   |
+|:------------|:----------------|:--------------|:-----------------|
+| 4x4         | 0.02x           | 0.00x         | 0.01x            |
+| 8x8         | 0.08x           | 0.00x         | 0.02x            |
+| 16x16       | 0.04x           | 0.01x         | 0.22x            |
+| 32x32       | 0.22x           | 0.03x         | 0.14x            |
+| 64x64       | 0.79x           | 0.12x         | 0.15x            |
+| 128x128     | 2.25x           | 0.43x         | 0.19x            |
+| 256x256     | 2.35x           | 1.44x         | 0.61x            |
+| 512x512     | 2.30x           | 3.89x         | 1.69x            |
+| 1024x1024   | 2.38x           | 6.73x         | 2.82x            |
+| 2048x2048   | 3.50x           | 6.22x         | 1.78x            |
+| 4096x4096   | 3.33x           | 9.54x         | 2.86x            |
+| 8192x8192   | 3.25x           | 9.49x         | 2.92x            |
 
 
 
 
+## 5. Identification des améliorations possibles
 
+//TODO
+
+## 6. Conclusion
+
+//TODO
