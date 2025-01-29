@@ -8,3 +8,5 @@ compile_commands.json
 *.bin
 .vscode/settings.json
 .venv
+display-timeline
+generate-video
