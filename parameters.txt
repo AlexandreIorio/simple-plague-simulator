@@ -1,6 +1,6 @@
 population 50
-healthy_infection_probability 5
-immune_infection_probability 0
+healthy_infection_probability 10
+immune_infection_probability 1
 death_probability 10
 initial_infected 1
 initial_immune 0

@@ -244,7 +244,7 @@ int main(int argc, char *argv[])
 	std::cout << "------------------------------------\n";
 	std::cout
 		<< "Population                  : " << params.populationPercent
-		<< "%\n"
+		<< " %\n"
 		<< "World height                : " << params.worldHeight
 		<< "\n"
 		<< "World Width                 : " << params.worldWidth << "\n"
@@ -258,11 +258,11 @@ int main(int argc, char *argv[])
 		<< "Immune infection probability: "
 		<< params.immuneInfectionProbability << " % \n"
 		<< "Death probability           : " << params.deathProbability
-		<< "%\n"
+		<< " %\n"
 		<< "Initial infected            : " << params.initialInfected
 		<< "\n"
 		<< "Population immunized        : " << params.initialImmune
-		<< "%\n";
+		<< " %\n";
 	std::cout << "\n";
 	std::cout << "-----------------------------------\n";
 	std::cout << "         Initialisation\n";
