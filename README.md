@@ -20,21 +20,6 @@ The main application can be built in three different ways:
 2. OpenMP - Uses openmp to run code in parallel
 3. Cuda - Compile using CUDA to get the best possible performance when using big grids
 
-- **C++ Compiler** (compatible with C++17 or later).
-- **Dependencies**:
-  - `plague.h` and `video_utils.h`.
-  - OpenCV to create the video.
-  **SDL2**
-  ```bash
-    git clone https://github.com/libsdl-org/SDL.git -b SDL2
-    cd SDL
-    mkdir build
-    cd build
-    ../configure
-    make
-    sudo make install
-```
-
 **Standard:**
 
 ```bash
@@ -58,27 +43,14 @@ make cuda
 
 ## **Available Options**
 
-| Short Option | Long Option            | Description                                            | Default Value |
-| ------------ | ---------------------- | ------------------------------------------------------ | ------------- |
-| `-p`         | `--population`         | Percentage of the population to simulate               | `50%`         |
-| `-m`         | `--initial-immune`     | Number of initially immune people                      | `0`           |
-| `-e`         | `--healthy-infection`  | Probability of a healthy people of getting infected    | `5`           |
-| `-d`         | `--infection-duration` | Duration of infection before immunity or death (turns) | `10`          |
-| `-r`         | `--dead-probability`   | Probability of death after infection                   | `10%`         |
-| `-i`         | `--initial-infected`   | Number of initially infected individuals               | `1`           |
-| `-y`         | `--proximity`          | Proximity required for infection                       | `2`           |
-| `-h`         | `--world-height`       | Height of the simulation grid                          | `10`          |
-| `-w`         | `--world-width`        | Width of the simulation grid                           | `10`          |
-| `-r`         | `--rounds`             | Maximum number of rounds                               | `Unlimited`   |
-| `-f`         |                        | Path to a file containing the simulation parameters    |               |
-| `--help`     |                        | Display usage information                              |               |
-
-##### Example:
-
 ```bash
-./build/std/app -f parameters.txt
-./build/openmp/app -f parameters.txt
-./build/cuda/app -f parameters.txt
+./plague-simulator-std --help
+Usage: Plague Simulator [options]
+Options:
+  -f, --file      <file_path>          Parameter File
+  -g, --generate  <output_file_path>   Generates a Parameter File
+  -r, --rounds    <value>              Max Rounds (default: No limit)
+      --help                           Display this information
 ```
 
 ## Simulation Output
