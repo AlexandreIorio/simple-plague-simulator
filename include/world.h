@@ -18,11 +18,11 @@ typedef struct {
 	size_t initial_infected;
 	size_t initial_immune;
 	size_t proximity;
-	uint8_t population_percentage;
-	uint8_t death_probability;
-	uint8_t infection_duration;
-	uint8_t healthy_infection_probability;
-	uint8_t immune_infection_probability;
+	uint16_t population_percentage;
+	uint16_t death_probability;
+	uint16_t infection_duration;
+	uint16_t healthy_infection_probability;
+	uint16_t immune_infection_probability;
 } world_parameters_t;
 
 typedef struct {
