@@ -41,7 +41,7 @@ timeline_error_t timeline_push_round(timeline_t *tl, uint8_t *grid)
 	uint8_t count = 1;
 	uint8_t element = grid[0];
 	fwrite(&FLAG, sizeof(FLAG), 1, tl->fp);
-	for (size_t i = 0; i < grid_size; ++i) {
+	for (size_t i = 1; i < grid_size; ++i) {
 		if (count == 255 || grid[i] != element) {
 			fwrite(&count, sizeof(count), 1, tl->fp);
 			fwrite(&element, sizeof(element), 1, tl->fp);
