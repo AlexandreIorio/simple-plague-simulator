@@ -70,8 +70,8 @@ Date : **29.01.2025**
 
 ## 0. Introduction
 
-Ce laboratoire à pour but de d'accélerer une application demandant beaucoup de ressources en utilisant le parallélisme. Nous allons appliquer les concepts vus en cours pour accélérer une simulation de propagation de pandémie.
-Toute les simulations sont éxécutées sur un serveur sur le matériel suivant:
+Ce laboratoire a pour but d'accélérer une application demandant beaucoup de ressources en utilisant le parallélisme. Nous allons appliquer les concepts vus en cours pour accélérer une simulation de propagation de pandémie.
+Toutes les simulations sont exécutées sur un serveur avec le matériel suivant :
 
 ```bash
 cnm@cnm-desktop 
@@ -109,22 +109,22 @@ et les caractéristiques `GPU` suivantes:
 
 ## 1. Objectifs
 
-- Implémenter une programme de simulation de propagation de pandémie demandant beaucoup de ressources
-- Analiser les performances de l'application
+- Implémenter un programme de simulation de propagation de pandémie demandant beaucoup de ressources
+- Analyser les performances de l'application
 - Identifier les goulets d'étranglement de l'application
-- Paralléliser l'application avec `OpenMP`
-- Analyser les performances de l'application parallélisée avec `OpenMP`
-- Paralléliser l'application avec `Cuda`
-- Analyser les performances de l'application parallélisée avec `Cuda`
+- Paralléliser l'application avec OpenMP
+- Analyser les performances de l'application parallélisée avec OpenMP
+- Paralléliser l'application avec Cuda
+- Analyser les performances de l'application parallélisée avec Cuda
 - Comparer les performances des trois versions de l'application
 - Identifier les améliorations possibles
 
 ## 2. Description de l'application
 
 L'application `simple-plague-simulation` disponible sur le dépôt `git` [simple-plague-simulator](https://github.com/AlexandreIorio/simple-plague-simulator.git) est une simulation de propagation de pandémie.
-Son fonctionnement est simple, initialiser une `Grid 2D` de taille `N x N` avec un pourcentage d'occupation.
-Chaque cellule de la grille peut être dans un des états suivants: `EMPTY`, `HEALTY`, `INFECTED`, `DEAD` ou `IMMUNE`.
-Nous décidons du nombre de personne à infécter au début de la simulation et chaque tour nous calculons les nouvelles infections en fonction des paramêtres saisis. 
+Son fonctionnement est simple : initialiser une `Grid 2D` de taille `N x N` avec un pourcentage d'occupation.
+Chaque cellule de la grille peut être dans un des états suivants : `EMPTY`, `HEALTHY`, `INFECTED`, `DEAD` ou `IMMUNE`.
+Nous décidons du nombre de personnes à infecter au début de la simulation et à chaque tour nous calculons les nouvelles infections en fonction des paramètres saisis. 
 Une fois que plus personne n'est infecté, la simulation s'arrête et un rapport est généré.
 
 **Exemple**
