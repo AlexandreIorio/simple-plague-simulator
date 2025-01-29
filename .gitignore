@@ -2,7 +2,7 @@
 build
 .cache/clangd/index
 *.avi
-plague-simulator
+plague-simulator*
 *.o
 compile_commands.json
 *.bin
