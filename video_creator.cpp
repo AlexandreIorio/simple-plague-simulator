@@ -15,13 +15,13 @@ cv::Scalar stateToColor(uint8_t state)
 		return cv::Scalar(0, 255, 0, 255);
 		break;
 	case 2:
-		return cv::Scalar(255, 0, 0, 255);
+		return cv::Scalar(0, 0, 255, 255);
 		break;
 	case 3:
 		return cv::Scalar(0, 0, 0, 255);
 		break;
 	case 4:
-		return cv::Scalar(0, 0, 255, 255);
+		return cv::Scalar(255, 0, 0, 255);
 		break;
 	default:
 		return cv::Scalar(255, 255, 255, 255);
