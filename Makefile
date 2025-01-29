@@ -14,8 +14,12 @@ cuda:
 timeline_display:
 	$(MAKE) -f Makefile.timeline
 
+video_creator:
+	$(MAKE) -f Makefile.video
+
 clean:
 	$(MAKE) -f Makefile.std clean
 	$(MAKE) -f Makefile.omp clean
 	$(MAKE) -f Makefile.cuda clean
 	$(MAKE) -f Makefile.timeline clean
+	$(MAKE) -f Makefile.video clean
