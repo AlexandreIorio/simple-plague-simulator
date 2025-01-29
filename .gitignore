@@ -11,3 +11,4 @@ compile_commands.json
 display-timeline
 generate-video
 timeline-details
+*.csv
