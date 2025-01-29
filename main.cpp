@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
 		{ "world-width", required_argument, nullptr, 'w' },
 		{ "file", required_argument, nullptr, 'f' },
 		{ "generate-file", no_argument, nullptr,
-		  'g' }, // Nouvelle option
+		  'g' },
 		{ "help", no_argument, nullptr, ' ' },
 		{ nullptr, 0, nullptr, 0 }
 	};
