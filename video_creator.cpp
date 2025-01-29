@@ -68,35 +68,32 @@ int main(int argc, char **argv)
 	std::cout << "------------------------------------\n";
 	std::cout
 		<< "Population                  : "
-		<< tl.params.populationPercent << "%\n"
-		<< "World height                : " << tl.params.worldHeight
-		<< "\n"
-		<< "World Width                 : " << tl.params.worldWidth
-		<< "\n"
+		<< tl.params.population_percentage << "%\n"
+		<< "World height                : " << tl.params.height << "\n"
+		<< "World Width                 : " << tl.params.width << "\n"
 		<< "World size                  : "
-		<< tl.params.worldHeight * tl.params.worldWidth << "\n"
+		<< tl.params.height * tl.params.width << "\n"
 		<< "Proximity                   : " << tl.params.proximity
 		<< "\n"
 		<< "Infection duration          : "
-		<< tl.params.infectionDuration << " turns\n"
+		<< tl.params.infection_duration << " turns\n"
 		<< "Healthy infection probability:"
-		<< tl.params.healthyInfectionProbability << " % \n"
+		<< tl.params.healthy_infection_probability << " % \n"
 		<< "Immune infection probability: "
-		<< tl.params.immuneInfectionProbability << " % \n"
+		<< tl.params.immune_infection_probability << " % \n"
 		<< "Death probability           : "
-		<< tl.params.deathProbability << "%\n"
-		<< "Initial infected            : " << tl.params.initialInfected
-		<< "\n"
-		<< "Population immunized        : " << tl.params.initialImmune
+		<< tl.params.death_probability << "%\n"
+		<< "Initial infected            : "
+		<< tl.params.initial_infected << "\n"
+		<< "Population immunized        : " << tl.params.initial_immune
 		<< "%\n"
 		<< "Number of Rounds            : " << tl.saved_rounds << '\n';
 	std::cout << "\n";
 
-	uint8_t *grid =
-		new uint8_t[tl.params.worldHeight * tl.params.worldWidth];
+	uint8_t *grid = new uint8_t[tl.params.height * tl.params.width];
 
-	cv::Size videoSize{ (int)tl.params.worldWidth * CELL_SIZE,
-			    (int)tl.params.worldHeight * CELL_SIZE };
+	cv::Size videoSize{ (int)tl.params.width * CELL_SIZE,
+			    (int)tl.params.height * CELL_SIZE };
 
 	cv::VideoWriter writer(argv[2],
 			       cv::VideoWriter::fourcc('H', '2', '6', '4'), 60,
@@ -114,8 +111,8 @@ int main(int argc, char **argv)
 			std::cerr << "Failed to Read Round\n";
 			break;
 		}
-		cv::Mat frame = createFrame(grid, tl.params.worldWidth,
-					    tl.params.worldHeight, CELL_SIZE);
+		cv::Mat frame = createFrame(grid, tl.params.width,
+					    tl.params.height, CELL_SIZE);
 		writer.write(frame);
 	}
 

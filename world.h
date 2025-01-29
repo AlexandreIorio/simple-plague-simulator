@@ -1,7 +1,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-
 #ifndef WORLD_H
 #define WORLD_H
 
@@ -14,27 +13,27 @@ enum state { EMPTY = 0, HEALTHY, INFECTED, DEAD, IMMUNE };
 typedef uint8_t state_t;
 
 typedef struct {
-	size_t worldHeight;
-	size_t worldWidth;
-	size_t populationPercent;
-	size_t initialInfected;
-	size_t initialImmune;
-	int32_t deathProbability;
-	int32_t infectionDuration;
-	int32_t healthyInfectionProbability;
-	int32_t immuneInfectionProbability;
+	size_t height;
+	size_t width;
+	size_t population_percentage;
+	size_t initial_infected;
+	size_t initial_immune;
+	int32_t death_probability;
+	int32_t infection_duration;
+	int32_t healthy_infection_probability;
+	int32_t immune_infection_probability;
 	int32_t proximity;
 } world_parameters_t;
 
 typedef struct {
 	state_t *grid;
-	uint8_t *infectionDurationGrid;
+	uint8_t *infection_duration_grid;
 	/* 
 	* only used by cuda. Can't use a #ifdef __CUDACC__ as this file
 	* is included in .c and .cpp files and when those files 
 	* get compiled, CUDACC is not defined
 	*/
-	void *cuda_random_state; 
+	void *cuda_random_state;
 	world_parameters_t params;
 } world_t;
 

@@ -126,32 +126,29 @@ int main(int argc, char *argv[])
 	std::cout << "------------------------------------\n";
 	std::cout
 		<< "Population                  : "
-		<< tl.params.populationPercent << "%\n"
-		<< "World height                : " << tl.params.worldHeight
-		<< "\n"
-		<< "World Width                 : " << tl.params.worldWidth
-		<< "\n"
+		<< tl.params.population_percentage << "%\n"
+		<< "World height                : " << tl.params.height << "\n"
+		<< "World Width                 : " << tl.params.width << "\n"
 		<< "World size                  : "
-		<< tl.params.worldHeight * tl.params.worldWidth << "\n"
+		<< tl.params.height * tl.params.width << "\n"
 		<< "Proximity                   : " << tl.params.proximity
 		<< "\n"
 		<< "Infection duration          : "
-		<< tl.params.infectionDuration << " turns\n"
+		<< tl.params.infection_duration << " turns\n"
 		<< "Healthy infection probability:"
-		<< tl.params.healthyInfectionProbability << " % \n"
+		<< tl.params.healthy_infection_probability << " % \n"
 		<< "Immune infection probability: "
-		<< tl.params.immuneInfectionProbability << " % \n"
+		<< tl.params.immune_infection_probability << " % \n"
 		<< "Death probability           : "
-		<< tl.params.deathProbability << "%\n"
-		<< "Initial infected            : " << tl.params.initialInfected
-		<< "\n"
-		<< "Population immunized        : " << tl.params.initialImmune
+		<< tl.params.death_probability << "%\n"
+		<< "Initial infected            : "
+		<< tl.params.initial_infected << "\n"
+		<< "Population immunized        : " << tl.params.initial_immune
 		<< "%\n"
 		<< "Number of Rounds            : " << tl.saved_rounds << '\n';
 	std::cout << "\n";
 
-	uint8_t *grid =
-		new uint8_t[tl.params.worldHeight * tl.params.worldWidth];
+	uint8_t *grid = new uint8_t[tl.params.height * tl.params.width];
 
 	while (!quit) {
 		const uint32_t frame_start = SDL_GetTicks();
@@ -168,7 +165,7 @@ int main(int argc, char *argv[])
 			break;
 		}
 
-		draw(grid, tl.params.worldWidth, tl.params.worldHeight);
+		draw(grid, tl.params.width, tl.params.height);
 		const uint32_t frame_time = SDL_GetTicks() - frame_start;
 		if (frame_time < FRAME_DELAY) {
 			SDL_Delay(FRAME_DELAY - frame_time);

@@ -27,7 +27,7 @@ timeline_error_t timeline_init(timeline_t *tl, const world_parameters_t *params,
 size_t timeline_expected_size(const world_parameters_t *params,
 			      size_t nb_rounds)
 {
-	return params->worldWidth * params->worldHeight * sizeof(uint8_t) *
+	return params->width * params->height * sizeof(uint8_t) *
 		       nb_rounds + // Grid size * nb of rounds
 	       sizeof(FLAG) +
 	       sizeof(size_t);
@@ -37,7 +37,7 @@ timeline_error_t timeline_push_round(timeline_t *tl, uint8_t *grid)
 	if (tl->file_size >= tl->max_size) {
 		return TL_MAX_SIZE;
 	}
-	const size_t grid_size = tl->params.worldWidth * tl->params.worldHeight;
+	const size_t grid_size = tl->params.width * tl->params.height;
 	uint8_t count = 1;
 	uint8_t element = grid[0];
 	for (size_t i = 1; i < grid_size; ++i) {
@@ -77,7 +77,7 @@ timeline_error_t timeline_load(timeline_t *tl, const char *path)
 
 timeline_error_t timeline_get_round(timeline_t *tl, uint8_t *grid)
 {
-	const size_t grid_size = tl->params.worldWidth * tl->params.worldHeight;
+	const size_t grid_size = tl->params.width * tl->params.height;
 	size_t i = 0;
 	while (i < grid_size) {
 		uint8_t count;

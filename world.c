@@ -29,13 +29,11 @@ static uint8_t world_get_nb_infected_neighbours(const world_t *p, size_t i,
 			}
 			const size_t ni = i + dx;
 			const size_t nj = j + dy;
-			if (!(ni < p->params.worldHeight &&
-			      nj < p->params.worldWidth)) {
+			if (!(ni < p->params.height && nj < p->params.width)) {
 				continue;
 			}
 
-			sum += p->grid[ni * p->params.worldWidth + nj] ==
-			       INFECTED;
+			sum += p->grid[ni * p->params.width + nj] == INFECTED;
 		}
 	}
 	return sum;
@@ -56,21 +54,21 @@ int world_init(world_t *world, const world_parameters_t *p)
 
 	const size_t people_to_spawn = world_initial_population(p);
 
-	if (!(people_to_spawn >= p->initialImmune + p->initialInfected)) {
+	if (!(people_to_spawn >= p->initial_immune + p->initial_infected)) {
 		return -1;
 	}
 
 	world->grid = (state_t *)malloc(world_size * sizeof(*world->grid));
 
-	world->infectionDurationGrid = (uint8_t *)malloc(
-		world_size * sizeof(*world->infectionDurationGrid));
+	world->infection_duration_grid = (uint8_t *)malloc(
+		world_size * sizeof(*world->infection_duration_grid));
 
-	if (!world->grid || !world->infectionDurationGrid) {
+	if (!world->grid || !world->infection_duration_grid) {
 		return -1;
 	}
 	memset(world->grid, EMPTY, sizeof(*world->grid) * world_size);
-	memset(world->infectionDurationGrid, p->infectionDuration,
-	       sizeof(*world->infectionDurationGrid) * world_size);
+	memset(world->infection_duration_grid, p->infection_duration,
+	       sizeof(*world->infection_duration_grid) * world_size);
 	memcpy(&world->params, p, sizeof(*p));
 
 	srand(time(NULL));
@@ -78,13 +76,13 @@ int world_init(world_t *world, const world_parameters_t *p)
 #ifdef _OPENMP
 	const size_t max_threads = omp_get_max_threads();
 	const size_t people_to_infect_per_thread =
-		p->initialInfected / max_threads;
+		p->initial_infected / max_threads;
 	const size_t people_to_infect_on_last_thread =
-		p->initialInfected % max_threads;
+		p->initial_infected % max_threads;
 	const size_t people_to_immunize_per_thread =
-		p->initialImmune / max_threads;
+		p->initial_immune / max_threads;
 	const size_t people_to_immunize_on_last_thread =
-		p->initialImmune % max_threads;
+		p->initial_immune % max_threads;
 	const size_t people_to_spawn_per_thread = people_to_spawn / max_threads;
 	const size_t people_to_spawn_on_last_thread =
 		people_to_spawn % max_threads;
@@ -116,8 +114,8 @@ int world_init(world_t *world, const world_parameters_t *p)
 			is_last_thread ? last_thread_chunk + chunk_per_thread :
 					 chunk_per_thread;
 #else
-	const size_t infected_people_to_spawn = p->initialInfected;
-	const size_t immune_people_to_spawn = p->initialImmune;
+	const size_t infected_people_to_spawn = p->initial_infected;
+	const size_t immune_people_to_spawn = p->initial_immune;
 #endif
 		size_t people = 0;
 		size_t people_infected = 0;
@@ -161,23 +159,23 @@ void world_infect_if_should_infect(const world_t *p, state_t *world, size_t i,
 				   size_t j, int probability)
 {
 	if (world_should_infect(p, i, j, probability)) {
-		world[i * p->params.worldWidth + j] = INFECTED;
+		world[i * p->params.width + j] = INFECTED;
 	}
 }
 void world_handle_infected(world_t *p, state_t *world, size_t i, size_t j)
 {
-	const size_t index = i * p->params.worldWidth + j;
+	const size_t index = i * p->params.width + j;
 
-	if (p->infectionDurationGrid[index] == 0) {
-		if (should_happen(p->params.deathProbability)) {
+	if (p->infection_duration_grid[index] == 0) {
+		if (should_happen(p->params.death_probability)) {
 			world[index] = DEAD;
 		} else {
 			world[index] = IMMUNE;
-			p->infectionDurationGrid[index] =
-				p->params.infectionDuration;
+			p->infection_duration_grid[index] =
+				p->params.infection_duration;
 		}
 	} else {
-		p->infectionDurationGrid[index]--;
+		p->infection_duration_grid[index]--;
 	}
 }
 
@@ -195,21 +193,21 @@ void world_update(world_t *p, void *raw)
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
-	for (size_t i = 0; i < p->params.worldHeight; i++) {
+	for (size_t i = 0; i < p->params.height; i++) {
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
-		for (size_t j = 0; j < p->params.worldWidth; j++) {
-			switch (p->grid[i * p->params.worldWidth + j]) {
+		for (size_t j = 0; j < p->params.width; j++) {
+			switch (p->grid[i * p->params.width + j]) {
 			case HEALTHY:
 				world_infect_if_should_infect(
 					p, tmp_world, i, j,
-					p->params.healthyInfectionProbability);
+					p->params.healthy_infection_probability);
 				break;
 			case IMMUNE:
 				world_infect_if_should_infect(
 					p, tmp_world, i, j,
-					p->params.immuneInfectionProbability);
+					p->params.immune_infection_probability);
 				break;
 
 			case INFECTED:

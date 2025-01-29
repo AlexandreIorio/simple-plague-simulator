@@ -33,17 +33,17 @@ bool generateParameterFile(const std::string &filename,
 		return false;
 	}
 
-	file << parameterNames[0] << " " << w->populationPercent << "\n";
-	file << parameterNames[1] << " " << w->healthyInfectionProbability
+	file << parameterNames[0] << " " << w->population_percentage << "\n";
+	file << parameterNames[1] << " " << w->healthy_infection_probability
 	     << "\n";
-	file << parameterNames[2] << " " << w->immuneInfectionProbability
+	file << parameterNames[2] << " " << w->immune_infection_probability
 	     << "\n";
-	file << parameterNames[3] << " " << w->deathProbability << "\n";
-	file << parameterNames[4] << " " << w->initialInfected << "\n";
-	file << parameterNames[5] << " " << w->initialImmune << "\n";
+	file << parameterNames[3] << " " << w->death_probability << "\n";
+	file << parameterNames[4] << " " << w->initial_infected << "\n";
+	file << parameterNames[5] << " " << w->initial_immune << "\n";
 	file << parameterNames[6] << " " << w->proximity << "\n";
-	file << parameterNames[7] << " " << w->worldHeight << "\n";
-	file << parameterNames[8] << " " << w->worldWidth << "\n";
+	file << parameterNames[7] << " " << w->height << "\n";
+	file << parameterNames[8] << " " << w->width << "\n";
 	file.close();
 	std::cout << "Parameters written to " << filename << std::endl;
 	return true;
@@ -65,23 +65,23 @@ bool loadParametersFromFile(const std::string &filename, world_parameters_t *w)
 		int value;
 		if (iss >> key >> value) {
 			if (key == parameterNames[0])
-				w->populationPercent = value;
+				w->population_percentage = value;
 			else if (key == parameterNames[1])
-				w->healthyInfectionProbability = value;
+				w->healthy_infection_probability = value;
 			else if (key == parameterNames[2])
-				w->immuneInfectionProbability = value;
+				w->immune_infection_probability = value;
 			else if (key == parameterNames[3])
-				w->deathProbability = value;
+				w->death_probability = value;
 			else if (key == parameterNames[4])
-				w->initialInfected = value;
+				w->initial_infected = value;
 			else if (key == parameterNames[5])
-				w->initialImmune = value;
+				w->initial_immune = value;
 			else if (key == parameterNames[6])
 				w->proximity = value;
 			else if (key == parameterNames[7])
-				w->worldHeight = value;
+				w->height = value;
 			else if (key == parameterNames[8])
-				w->worldWidth = value;
+				w->width = value;
 			else {
 				std::cerr << "Warning: Unknown key '" << key
 					  << "' in file " << filename
@@ -99,23 +99,23 @@ void printUsage(const world_parameters_t *w)
 		<< "Usage: Plague Simulator [options]\n"
 		<< "Options:\n"
 		<< "  -p, --population <value>               Percent of population (default: "
-		<< w->populationPercent << "%)\n"
+		<< w->population_percentage << "%)\n"
 		<< "  -m, --population-immune <value>        Number of initial immune people (default: "
-		<< w->initialImmune << "%)\n"
+		<< w->initial_immune << "%)\n"
 		<< "  -e, --healthy-infection <value>        Probability to infect a healthy person (default: "
-		<< w->healthyInfectionProbability << "%)\n"
+		<< w->healthy_infection_probability << "%)\n"
 		<< "  -n, --immune-infection <value>         Probability to infect an immune person (default: "
-		<< w->immuneInfectionProbability << "%)\n"
+		<< w->immune_infection_probability << "%)\n"
 		<< "  -d, --death-probability <value>         Probability of death (default: "
-		<< w->deathProbability << "%)\n"
+		<< w->death_probability << "%)\n"
 		<< "  -i, --initial-infected <value>         Number of initial infected (default: "
-		<< w->initialInfected << ")\n"
+		<< w->initial_infected << ")\n"
 		<< "  -y, --proximity <value>                Proximity of infection (default: "
 		<< w->proximity << ")\n"
 		<< "  -h, --world-height <value>             Height of the grid (default: "
-		<< w->worldHeight << ")\n"
+		<< w->height << ")\n"
 		<< "  -w, --world-width <value>              Width of the grid (default: "
-		<< w->worldWidth << ")\n"
+		<< w->width << ")\n"
 		<< "  -r, --rounds <value>		     Max Rounds (default: No limit)\n"
 		<< "  -f, --file <file>                      Load parameters from file\n"
 		<< "  -g, --generate-file                    Generate a parameter file\n"
@@ -126,15 +126,15 @@ int main(int argc, char *argv[])
 {
 	size_t total_rounds = 0;
 	world_parameters_t params = {
-		.worldHeight = 10,
-		.worldWidth = 10,
-		.populationPercent = 50,
-		.initialInfected = 1,
-		.initialImmune = 0,
-		.deathProbability = 10,
-		.infectionDuration = 5,
-		.healthyInfectionProbability = 10,
-		.immuneInfectionProbability = 10,
+		.height = 10,
+		.width = 10,
+		.population_percentage = 50,
+		.initial_infected = 1,
+		.initial_immune = 0,
+		.death_probability = 10,
+		.infection_duration = 5,
+		.healthy_infection_probability = 10,
+		.immune_infection_probability = 10,
 		.proximity = 2,
 	};
 
@@ -153,8 +153,7 @@ int main(int argc, char *argv[])
 		{ "world-height", required_argument, nullptr, 'h' },
 		{ "world-width", required_argument, nullptr, 'w' },
 		{ "file", required_argument, nullptr, 'f' },
-		{ "generate-file", no_argument, nullptr,
-		  'g' },
+		{ "generate-file", no_argument, nullptr, 'g' },
 		{ "help", no_argument, nullptr, ' ' },
 		{ nullptr, 0, nullptr, 0 }
 	};
@@ -165,8 +164,8 @@ int main(int argc, char *argv[])
 				  nullptr)) != -1) {
 		switch (opt) {
 		case 'p':
-			params.populationPercent = atoi(optarg);
-			if (params.populationPercent > 100) {
+			params.population_percentage = atoi(optarg);
+			if (params.population_percentage > 100) {
 				std::cerr
 					<< "Error: Population must be > 0% and <=100%.\n";
 				return 1;
@@ -174,36 +173,36 @@ int main(int argc, char *argv[])
 			break;
 
 		case 'e':
-			params.healthyInfectionProbability = atoi(optarg);
+			params.healthy_infection_probability = atoi(optarg);
 			break;
 
 		case 'n':
-			params.immuneInfectionProbability = atoi(optarg);
+			params.immune_infection_probability = atoi(optarg);
 			break;
 
 		case 'd':
-			params.deathProbability = atoi(optarg);
+			params.death_probability = atoi(optarg);
 			break;
 		case 'r':
 			total_rounds = atoi(optarg);
 			break;
 		case 'i':
-			params.initialInfected = atoi(optarg);
+			params.initial_infected = atoi(optarg);
 			break;
 
 		case 'm':
-			params.initialImmune = atoi(optarg);
+			params.initial_immune = atoi(optarg);
 			break;
 
 		case 'y':
 			params.proximity = atoi(optarg);
 			break;
 		case 'h':
-			params.worldHeight = atoi(optarg);
+			params.height = atoi(optarg);
 			break;
 
 		case 'w':
-			params.worldWidth = atoi(optarg);
+			params.width = atoi(optarg);
 			break;
 		case 'f': {
 			std::string filename = optarg;
@@ -243,25 +242,24 @@ int main(int argc, char *argv[])
 	std::cout << "Parameters\n";
 	std::cout << "------------------------------------\n";
 	std::cout
-		<< "Population                  : " << params.populationPercent
-		<< " %\n"
-		<< "World height                : " << params.worldHeight
-		<< "\n"
-		<< "World Width                 : " << params.worldWidth << "\n"
+		<< "Population                  : "
+		<< params.population_percentage << " %\n"
+		<< "World height                : " << params.height << "\n"
+		<< "World Width                 : " << params.width << "\n"
 		<< "World size                  : "
-		<< params.worldHeight * params.worldWidth << "\n"
+		<< params.height * params.width << "\n"
 		<< "Proximity                   : " << params.proximity << "\n"
-		<< "Infection duration          : " << params.infectionDuration
+		<< "Infection duration          : " << params.infection_duration
 		<< " turns\n"
 		<< "Healthy infection probability:"
-		<< params.healthyInfectionProbability << " % \n"
+		<< params.healthy_infection_probability << " % \n"
 		<< "Immune infection probability: "
-		<< params.immuneInfectionProbability << " % \n"
-		<< "Death probability           : " << params.deathProbability
+		<< params.immune_infection_probability << " % \n"
+		<< "Death probability           : " << params.death_probability
 		<< " %\n"
-		<< "Initial infected            : " << params.initialInfected
+		<< "Initial infected            : " << params.initial_infected
 		<< "\n"
-		<< "Population immunized        : " << params.initialImmune
+		<< "Population immunized        : " << params.initial_immune
 		<< " %\n";
 	std::cout << "\n";
 	std::cout << "-----------------------------------\n";
