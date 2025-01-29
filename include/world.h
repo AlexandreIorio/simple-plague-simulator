@@ -85,6 +85,8 @@ void world_update(world_t *w, void *tmp);
 ///@param the world
 void world_destroy(world_t *w);
 
+void world_print_params(const world_parameters_t *params);
+
 #ifdef __cplusplus
 }
 #endif
