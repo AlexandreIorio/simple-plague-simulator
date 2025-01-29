@@ -7,3 +7,4 @@ plague-simulator
 compile_commands.json
 *.bin
 .vscode/settings.json
+.venv
