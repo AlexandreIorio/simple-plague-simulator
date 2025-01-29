@@ -2,9 +2,47 @@
 
 ## Description
 
-**Plague Simulator** is a program that simulates the spread of a plague within a population defined by various parameters. You can customize the simulation's behavior, view detailed results, and optionally generate a video showing the progression of the outbreak.
+**Plague Simulator** is a program that simulates the spread of a plague within a population defined by various parameters. You can customize the simulation's behavior, view detailed results, and generate a video showing the progression of the outbreak.
 
 ![gif](./docs/assets/img/plague.gif)
+
+## Getting Started
+
+You can build the three versions directly using the provided Makefile.
+
+```bash
+make
+```
+
+This will build the three versions of the program. If you prefer only building one of the versions you can build them individually.
+
+```bash
+make std # Build the standard version
+make omp # Build the openmp version
+make cuda # Build the cuda version
+```
+
+We can now generate a parameter file using the following command:
+
+```bash
+./plague-simulator-std -g parameters.txt
+```
+
+This will generate a file named `parameters.txt` with the default parameters.
+
+You can now run each version of the program using this parameter file.
+
+```bash
+./plague-simulator-std -f parameters.txt
+./plague-simulator-omp -f parameters.txt
+./plague-simulator-cuda -f parameters.txt
+```
+
+You can optionally limit the number of rounds using the `-r` option. This is useful to compare the performance of the different versions.
+
+```bash
+./plague-simulator-std -f parameters.txt -r 100
+```
 
 ## Features
 
@@ -20,27 +58,6 @@ The main application can be built in three different ways:
 2. OpenMP - Uses openmp to run code in parallel
 3. Cuda - Compile using CUDA to get the best possible performance when using big grids
 
-**Standard:**
-
-```bash
-make std
-./build/std/app
-```
-
-**OpenMP:**
-
-```bash
-make omp
-./build/openmp/app
-```
-
-**CUDA:**
-
-```bash
-make cuda
-./build/cuda/app
-```
-
 ## **Available Options**
 
 ```bash
@@ -53,64 +70,76 @@ Options:
       --help                           Display this information
 ```
 
-## Simulation Output
+## Parameters
 
-Upon execution, the program displays:
+The parameter file is a simple text file that contains the parameters of the simulation. It looks like this:
 
-- Simulation parameters (population, immunity rate, grid dimensions, etc.).
-- Initial statistics (number of healthy, infected, and immune individuals).
-- Simulation progress and time taken.
-- Final results: survivors, deaths, and remaining healthy population.
+```txt
+height 256
+width 256
+initial_infected 1
+initial_immune 0
+proximity 2
+population_percentage 100
+death_probability 1
+infection_duration 5
+healthy_infection_probability 2
+immune_infection_probability 1
+```
 
-output example:
+## Timeline
+
+Running a simulation generate a `timeline.bin` file that stores the state of the simulation at each turn.
+
+> [!NOTE]
+> This file is stored using RLE encoding to save space and the program limits the size of the file to 500MB to avoid running out of space.
+
+With this `timeline.bin`, you can:
+
+1. Generate a video
+2. Display the video in real-time
+3. Export the details of the simulation
+
+### Generate a Video
+
+First, make sure you have `opencv` installed on your system. `h264` codec is used to compress the video.
 
 ```bash
-./build/openmp/app -f parameters.txt
------------------------------------
-         Plague Simulator
------------------------------------
-Runtime : OpenMP
-------------------------------------
-Parameters
-------------------------------------
-Population                  : 50%
-World height                : 256
-World Width                 : 256
-World size                  : 65536
-Proximity                   : 2
-Infection duration          : 5 turns
-Healthy infection probability:10 %
-Immune infection probability: 0 %
-Death probability           : 10%
-Initial infected            : 1
-Population immunized        : 0%
-
------------------------------------
-         Initialisation
------------------------------------
-Initializing World ...
-Initialization Duration: 0.0117254 s
-------------------------------------
-Initial world :
-------------------------------------
-Number of healthy people  : 32767
-Number of infected people : 1
-Number of immunized people: 0
-
-------------------------------------
-Simulation
-------------------------------------
-Simulation started
-...
-------------------------------------
-Saving Timeline
-Timeline created
-Initialization took       : 0.0117254 s
-Simulation took           : 0.959415 s
-Total Time                : 0.971141 s
-Number of turns           : 397
-Number of healthy people  : 3116
-Number of immunized people: 26691
-Number of survivor        : 29807
-Number of dead people     : 2961
+make generate_video
+./generate_video timeline.bin output.avi
 ```
+
+You can now open the video using your favorite video player.
+
+### Display the Simulation
+
+If you don't want to generate a video, you can display the simulation in real-time.
+
+For this, you need to have `SDL2` installed on your system.
+
+```bash
+make display_timeline
+./display_timeline timeline.bin
+```
+
+### Export the Details of the Simulation
+
+This script will export a CSV file with the details of the simulation.
+
+```bash
+make timeline_details
+./timeline_details timeline.bin output.csv
+```
+
+The format of the CSV file is as follows:
+
+```csv
+round,healthy,infected,immune,dead,total
+0,524287,1,0,0,524288
+1,524287,1,0,0,524288
+...
+```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.

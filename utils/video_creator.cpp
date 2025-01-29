@@ -79,10 +79,11 @@ int main(int argc, char **argv)
 			       videoSize);
 
 	if (!writer.isOpened()) {
+		std::cerr << "Failed to Open Video Writer " << argv[2] << '\n';
 		return -1;
 	}
 
-	for (size_t i = 0; i < tl.saved_rounds; ++i) {
+	while (1) {
 		err = timeline_get_round(&tl, grid);
 		if (err == TL_END) {
 			break;
