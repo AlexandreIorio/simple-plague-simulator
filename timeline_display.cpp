@@ -59,7 +59,6 @@ static void draw(uint8_t *grid, size_t width, size_t height)
 	if (cell_height == 0) {
 		cell_height = 1;
 	}
-	std::cout << cell_width << " " << cell_height << std::endl;
 	for (size_t y = 0; y < height; ++y) {
 		for (size_t x = 0; x < width; ++x) {
 			uint8_t cell = grid[y * width + x];
