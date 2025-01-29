@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
 		.initial_infected = 1,
 		.initial_immune = 0,
 		.proximity = 2,
-		.population_percentage = 50,
+		.population_percentage = 100,
 		.death_probability = 10,
 		.infection_duration = 5,
 		.healthy_infection_probability = 10,
