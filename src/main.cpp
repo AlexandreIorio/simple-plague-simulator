@@ -96,10 +96,10 @@ void print_usage(const world_parameters_t *w)
 	std::cout
 		<< "Usage: Plague Simulator [options]\n"
 		<< "Options:\n"
-		<< "  -f, --file      <value>     Parameter File\n"
-		<< "  -g, --generate  <value>     Generates a Parameter File\n"
-		<< "  -r, --rounds    <value>	  Max Rounds (default: No limit)\n"
-		<< "      --help                  Display this information\n";
+		<< "  -f, --file      <file_path>          Parameter File\n"
+		<< "  -g, --generate  <output_file_path>   Generates a Parameter File\n"
+		<< "  -r, --rounds    <value>              Max Rounds (default: No limit)\n"
+		<< "      --help                           Display this information\n";
 }
 
 int main(int argc, char *argv[])
