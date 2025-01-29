@@ -91,10 +91,10 @@ bool load_parameters_from_file(const std::string &filename,
 	return true;
 }
 
-void print_usage(const world_parameters_t *w)
+void print_usage(const char *program_name, const world_parameters_t *w)
 {
 	std::cout
-		<< "Usage: Plague Simulator [options]\n"
+		<< "Usage: " << program_name << " [options]\n"
 		<< "Options:\n"
 		<< "  -f, --file      <file_path>          Parameter File\n"
 		<< "  -g, --generate  <output_file_path>   Generates a Parameter File\n"
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
 		case '?':
 		case ':':
 		default:
-			print_usage(&params);
+			print_usage(argv[0], &params);
 			return 1;
 		}
 	}

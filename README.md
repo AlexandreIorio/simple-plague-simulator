@@ -45,7 +45,7 @@ make cuda
 
 ```bash
 ./plague-simulator-std --help
-Usage: Plague Simulator [options]
+Usage: ./plague-simulator-std [options]
 Options:
   -f, --file      <file_path>          Parameter File
   -g, --generate  <output_file_path>   Generates a Parameter File
