@@ -38,7 +38,9 @@ void world_print_params(const world_parameters_t *params)
 	       params->population_percentage);
 	printf("World Width                    %zu\n", params->width);
 	printf("World Height                   %zu\n", params->height);
-	printf("Proximity                      %zu\n", params->proximity);
+	printf("World Size                     %zu\n",
+	       world_world_size(params));
+	printf("Proximity                      %d\n", params->proximity);
 	printf("Infection Duration             %d rounds\n",
 	       params->infection_duration);
 	printf("Healthy Infection Probability  %d%%\n",

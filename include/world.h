@@ -17,7 +17,7 @@ typedef struct {
 	size_t width;
 	size_t initial_infected;
 	size_t initial_immune;
-	size_t proximity;
+	int32_t proximity;
 	uint16_t population_percentage;
 	uint16_t death_probability;
 	uint16_t infection_duration;
