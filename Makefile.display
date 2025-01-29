@@ -1,6 +1,6 @@
 CC = gcc
 CXX = g++
-CFLAGS = -g -O0 -Wall `sdl2-config --cflags` -Iinclude
+CFLAGS = -O3 -Wall `sdl2-config --cflags` -Iinclude
 SRC_DIR = src
 UTILS_DIR = utils
 BUILD_DIR = build/timeline_display
@@ -12,7 +12,7 @@ TARGET = display-timeline
 
 $(TARGET): $(OBJS)
 	@mkdir -p $(BUILD_DIR)
-	$(CXX) $(CFLAGS) -o $@ $^
+	$(CXX) $(CFLAGS) `sdl2-config --libs` -o $@ $^
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(BUILD_DIR)
