@@ -7,36 +7,35 @@ HEIGHT = [int(2**i) for i in range(2, 14)]
 ROUNDS = 100
 
 BENCHMARK_FILE_PATH = "benchmark_parameters.txt"
-PARAMETERS_FILE_CONTENT = """population 50
-healthy_infection_probability 5
-immune_infection_probability 0
-death_probability 10
-initial_infected 1
+PARAMETERS_FILE_CONTENT = """initial_infected 1
 initial_immune 0
-proximity 2"""
+proximity 2
+population_percentage 50
+death_probability 10
+infection_duration 5
+healthy_infection_probability 10
+immune_infection_probability 1
+"""
 
 BENCHMARK_RESULT_FILE = "benchmark_result.csv"
 
 
 def main():
 
-    with open(BENCHMARK_FILE_PATH, "w") as f:
-        f.write(PARAMETERS_FILE_CONTENT)
-
     csv_lines = []
-    for target in TARGETS:
-        for width, height in zip(WIDTH, HEIGHT):
+    for width, height in zip(WIDTH, HEIGHT):
+        with open(BENCHMARK_FILE_PATH, "w") as f:
+            f.write(PARAMETERS_FILE_CONTENT)
+            f.write(f"width {width}\nheight {height}\n")
+
+        for target in TARGETS:
             p = subprocess.Popen(
                 [
-                    f"plague-simulator-{target}",
+                    f"./plague-simulator-{target}",
                     "-f",
                     BENCHMARK_FILE_PATH,
                     "-r",
                     str(ROUNDS),
-                    "-w",
-                    str(width),
-                    "-h",
-                    str(height),
                 ],
                 stdout=subprocess.PIPE,
             )
