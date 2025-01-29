@@ -4,12 +4,12 @@
 
 const uint16_t FLAG = 0xcafe;
 
-int timeline_init(timeline_t *tl, const world_parameters_t *params,
-		  const char *path, size_t max_size)
+timeline_error_t timeline_init(timeline_t *tl, const world_parameters_t *params,
+			       const char *path, size_t max_size)
 {
 	tl->fp = fopen(path, "wb");
 	if (!tl->fp) {
-		return -1;
+		return TL_FAILED_TO_OPEN_FILE;
 	}
 
 	tl->saved_rounds = 0;
@@ -21,7 +21,7 @@ int timeline_init(timeline_t *tl, const world_parameters_t *params,
 	fwrite(&tl->saved_rounds, sizeof(tl->saved_rounds), 1, tl->fp);
 	fwrite(&tl->params, sizeof(tl->params), 1, tl->fp);
 
-	return 0;
+	return TL_OK;
 }
 
 size_t timeline_expected_size(const world_parameters_t *params,

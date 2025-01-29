@@ -307,9 +307,9 @@ int main(int argc, char *argv[])
 	double total_elapsed = 0;
 	timeline_t tl;
 
-	ret = timeline_init(&tl, &world.params, "timeline.bin",
-			    MAX_TIMELINE_SIZE);
-	if (ret < 0) {
+	tl_err = timeline_init(&tl, &world.params, "timeline.bin",
+			       MAX_TIMELINE_SIZE);
+	if (tl_err != TL_OK) {
 		std::cerr << "Failed to allocate memory to store world state"
 			  << '\n';
 		return 1;
