@@ -1,5 +1,5 @@
 NVCC = nvcc
-CFLAGS = -O2 -Xcompiler -Wall D_CUDA
+CFLAGS = -O2 -Xcompiler -Wall
 SRC_DIR = src
 BUILD_DIR = build/cuda
 
